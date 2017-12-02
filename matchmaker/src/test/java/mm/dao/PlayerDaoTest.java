@@ -1,5 +1,6 @@
 package mm.dao;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,5 +42,10 @@ public class PlayerDaoTest {
     @Test
     public void insertTest() throws Exception {
         assertEquals(playersBeforeTest + 1, playerDao.getAll().size());
+    }
+
+    @After
+    public void clear() throws Exception {
+        playerDao.delete(player);
     }
 }

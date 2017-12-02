@@ -12,9 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by sergey on 3/25/17.
- */
 public class PlayerDao implements Dao<Player> {
     private static final Logger log = LogManager.getLogger(PlayerDao.class);
 
@@ -33,6 +30,12 @@ public class PlayerDao implements Dao<Player> {
     private static final String INSERT_USER_TEMPLATE =
             "insert into game.player (gameid, login) " +
                     "values ('%d', '%s');";
+
+    @Language("sql")
+    private static final String DELETE_USER =
+            "delete * " +
+                    "from game.player " +
+                    "where ";
 
     @Language("sql")
     private static final String RESET_SCHEMA = "drop schema if exists game cascade;\n" +
@@ -92,6 +95,17 @@ public class PlayerDao implements Dao<Player> {
              Statement stm = con.createStatement()
         ) {
             stm.execute(String.format(INSERT_USER_TEMPLATE, player.getGameId(), player.getLogin()));
+        } catch (SQLException e) {
+            log.error("Failed to create player {}", player.getLogin(), e);
+        }
+    }
+
+    @Override
+    public void delete(Player player) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()
+        ) {
+            stm.execute(String.format(DELETE_USER, player.getLogin()));
         } catch (SQLException e) {
             log.error("Failed to create player {}", player.getLogin(), e);
         }
