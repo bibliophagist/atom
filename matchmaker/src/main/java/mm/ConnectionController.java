@@ -35,8 +35,7 @@ public class ConnectionController {
     /**
      * curl test
      * <p>
-     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" \
-     * localhost:8080/matchmaker/join -d "name=bomberman"
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/join -d "name=bomberman"
      */
 
     @RequestMapping(
@@ -45,6 +44,10 @@ public class ConnectionController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> join(@RequestParam("name") String name) {
+        if (!playerDao.playerExists(name)) {
+            //TODO: change HttpStatus
+            return new ResponseEntity<>("no player with such name, use register instead", headers, HttpStatus.BAD_REQUEST);
+        }
         log.info(name + " joins");
         if (matchMaker.join(name)) {
             log.info(name + " added to queue");
@@ -64,22 +67,42 @@ public class ConnectionController {
         log.info("gameId = " + gameId.toString() + " sent to " + name);
         return new ResponseEntity<>(gameId.toString(), headers, HttpStatus.OK);
     }
+
     /**
      * curl test
      * <p>
-     * curl -i localhost:8080/connection/list'
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/register -d "name=test"
+     *</p>
      */
-    /*@RequestMapping(
+
+    @RequestMapping(
+            path = "register",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> register(@RequestParam("name") String name) {
+        playerDao.insertIntoTable("playerlist.list", name);
+        return new ResponseEntity<>(name + " registered", headers, HttpStatus.OK);
+    }
+
+    /**
+     * curl test
+     * <p>
+     * curl -i localhost:8080/matchmaker/list'
+     */
+    @RequestMapping(
             path = "list",
             method = RequestMethod.GET,
-            produces = MediaType.TEXT_PLAIN_VALUE)
-    @ResponseBody
-    public String list() {
+            produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> list() {
         log.info("Games list request");
-        return "Player{" +
-                "Name= " + name +
-                ", id=" + id +
-                '}';
-    }*/
+        String openingTag = "<html><body><table>";
+        String tableHead = "<tr> <th>%s</th>><tr> ";
+        String tableRow = "<tr> <td> %s </td> <td> %s </td> <td>%s</td> </tr>";
+        String closingTag = "</table></body></html>";
+        return new ResponseEntity<>(tableHead, HttpStatus.OK);
+    }
 
 }

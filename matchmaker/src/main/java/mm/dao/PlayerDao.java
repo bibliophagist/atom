@@ -32,6 +32,11 @@ public class PlayerDao implements Dao<Player> {
                     "values ('%d', '%s');";
 
     @Language("sql")
+    private static final String INSERT_INTO_TABLE_TEMPLATE =
+            "insert into %s (login) " +
+                    "values ('%s');";
+
+    @Language("sql")
     private static final String DELETE_USER =
             "delete * " +
                     "from game.player " +
@@ -45,11 +50,16 @@ public class PlayerDao implements Dao<Player> {
     @Language("sql")
     private static final String RESET_TABLE = "DROP TABLE IF EXISTS game.player;\n" +
             "CREATE TABLE game.player (\n" +
-            "  gameId    SERIAL             NOT NULL,\n" +
-            "  login VARCHAR(20) UNIQUE NOT NULL,\n" +
+            "  gameId   SERIAL          ,\n" +
+            "  login    VARCHAR(20)     UNIQUE NOT NULL,\n" +
             "  PRIMARY KEY (login)\n" +
             ");";
-    //TODO: create drop table method to drop at the initialization
+
+    @Language("sql")
+    private static final String CHECK_FOR_PLAYER =
+            "SELECT * from playerlist.list where login = '%s'";
+
+
 
     @Override
     public List<Player> getAll() {
@@ -100,6 +110,16 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
+    public void insertIntoTable(String tableName, String name) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()
+        ) {
+            stm.execute(String.format(INSERT_INTO_TABLE_TEMPLATE, tableName, name));
+        } catch (SQLException e) {
+            log.error("Failed to register player {}", name, e);
+        }
+    }
+
     @Override
     public void delete(Player player) {
         try (Connection con = DbConnector.getConnection();
@@ -119,6 +139,20 @@ public class PlayerDao implements Dao<Player> {
             stm.execute(String.format(RESET_TABLE));
         } catch (SQLException e) {
             log.error("Failed to reset DB", e);
+        }
+    }
+
+    public boolean playerExists(String name) {
+        try (Connection con = DbConnector.getConnection();
+            Statement stm = con.createStatement()) {
+            ResultSet rs = stm.executeQuery(String.format(CHECK_FOR_PLAYER, name));
+            int rscounter = 0;
+            while (rs.next())
+                rscounter++;
+            return rscounter != 0;
+        } catch (SQLException e) {
+            log.error("Failed to check if player exists");
+            return false;
         }
     }
 
