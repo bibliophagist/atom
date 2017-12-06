@@ -56,7 +56,7 @@ public class GameSession implements Tickable {
     }
 
     public void initCanvas() {
-        pawn = new Pawn(32, 32, 300);
+        pawn = new Pawn(1, 1, 300);
 
         for (int i = 0; i < 13; ++i) {
             for (int k = 0; k < 17; ++k) {
