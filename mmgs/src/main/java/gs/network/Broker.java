@@ -18,7 +18,6 @@ public class Broker {
 
     private static final Broker instance = new Broker();
     private final ConnectionPool connectionPool;
-    private GameMechanics gameMechanics = new GameMechanics();//TODO удалить после реализации Tick
 
     public static Broker getInstance() {
         return instance;

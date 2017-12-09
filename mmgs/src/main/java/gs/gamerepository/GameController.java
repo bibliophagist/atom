@@ -1,7 +1,9 @@
-package gs.gamecontroller;
+package gs.gamerepository;
 
 
+import gs.GameMechanics;
 import gs.GameService;
+import gs.GameSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 @Controller
 @RequestMapping("game")
 public class GameController {
@@ -20,6 +24,7 @@ public class GameController {
     @Autowired
     GameService gameService;
 
+    //curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8090/game/create -d "playerCount=1234"
     @RequestMapping(
             path = "create",
             method = RequestMethod.POST,
@@ -32,14 +37,17 @@ public class GameController {
         return new ResponseEntity<Long>(gameId, headers, HttpStatus.OK);
     }
 
+    //curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8090/game/start -d "gameId=1"
     @RequestMapping(
             path = "start",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Long> create(@RequestParam("gameId") long gameId) {
+    public ResponseEntity<Long> start(@RequestParam("gameId") long gameId) {
+        System.out.println("We are inside!");
+        new Thread(new GameMechanics(GameRepository.getMap().get(gameId)), "game-mechanics-" + gameId).start();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
-        return new ResponseEntity<Long>(gameId, headers, HttpStatus.OK);
+        return new ResponseEntity<Long>(HttpStatus.OK);
     }
 }

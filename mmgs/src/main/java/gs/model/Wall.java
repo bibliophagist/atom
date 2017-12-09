@@ -16,10 +16,10 @@ public class Wall extends Field implements Positionable {
 
     private Type type;
 
-    public Wall(int x, int y, Type type, int id) {
+    public Wall(int x, int y, Type type) {
         super(x, y);
-        this.id = id;
         this.type = type;
+        this.id=getId();
         this.point = getPosition();
         log.info("Wallid = " + id + "; " + "Wall place = (" + point.getX() + "," +
                 point.getY() + ")" + "; " + "Type? = " + type);

@@ -11,6 +11,7 @@ public class Pawn extends Field implements Movable {
     private Point point;
     private long time;
     private int speed;
+    private boolean dead = false;
 
     public Pawn(int x, int y, int speed) {
         super(x, y);
@@ -19,6 +20,10 @@ public class Pawn extends Field implements Movable {
         this.point = getPosition();
         log.info("Playerid = " + id + "; " + "Pawn place = (" + point.getX() + "," +
                 point.getY() + ")" + "; " + "Pawn speed = " + speed);
+    }
+
+    public void setDead(){
+        dead=true;
     }
 
     @Override

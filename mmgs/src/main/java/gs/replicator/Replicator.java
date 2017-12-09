@@ -13,17 +13,17 @@ public class Replicator {
         if (gs.jsonStringBombs() == null) {
             if (gs.jsonStringExplosions() == null) {
                 Broker.getInstance().send(gs, connectionPool.getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                        "," + gs.getPawn().toJson());
+                        "," + gs.jsonStringPawns());
             } else {
                 Broker.getInstance().send(gs, connectionPool.getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                        "," + gs.jsonStringExplosions() + "," + gs.getPawn().toJson());
+                        "," + gs.jsonStringExplosions() + "," + gs.jsonStringPawns());
             }
         } else if (gs.jsonStringExplosions() == null) {
             Broker.getInstance().send(gs, connectionPool.getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                    "," + gs.jsonStringBombs() + "," + gs.getPawn().toJson());
+                    "," + gs.jsonStringBombs() + "," + gs.jsonStringPawns());
         } else {
             Broker.getInstance().send(gs, connectionPool.getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                    "," + gs.jsonStringBombs() + "," + gs.jsonStringExplosions() + "," + gs.getPawn().toJson());
+                    "," + gs.jsonStringBombs() + "," + gs.jsonStringExplosions() + "," + gs.jsonStringPawns());
         }
     }
 }

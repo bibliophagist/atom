@@ -14,9 +14,13 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 public class GameHandler extends TextWebSocketHandler implements WebSocketHandler {
 
     private GameSession gs = new GameSession(4);
-    private GameMechanics gameMechanics = new GameMechanics();//TODO удалить после реализации Tick
-    private final long tickTime = 5;
+    private GameMechanics gameMechanics = new GameMechanics(gs);//TODO удалить после реализации Tick
     private final ConnectionPool connectionPool;
+    private WebSocketSession webSocketSession;
+
+    public WebSocketSession getWebSocketSession() {
+        return webSocketSession;
+    }
 
     public GameHandler() {
         this.connectionPool = ConnectionPool.getInstance();
@@ -27,45 +31,26 @@ public class GameHandler extends TextWebSocketHandler implements WebSocketHandle
         super.afterConnectionEstablished(session);
         System.out.println("Socket Connected: " + session);
         String str = session.getUri().toString();
+        this.webSocketSession = session;
         //System.out.println(str.substring(str.indexOf("gameId")+7,str.indexOf("&")));
-        //System.out.println(str.substring(str.indexOf("&")+6));
-        ConnectionPool cp = ConnectionPool.getInstance();
-        //TODO затычка на создание сесси. Создавать сессию в matchmaker?
-        cp.add(session, "qwerty");
+        String name = str.substring(str.indexOf("&") + 6);
 
-        //gs.Test();
-        //Broker.getInstance().send(connectionPool.getPlayer(session), Topic.REPLICA, gs.jsonStringWalls());
-        //Broker.getInstance().send(gs);
+        ConnectionPool.getInstance().add(session, name);
 
-        gs.initCanvas();
-        gs.setSession(session);
-        gameMechanics.writeReplica(gs, cp);
-        //TODO вызывать не здесь, а после тика?
-        gameMechanics.read();
-        /*Thread thread = new Thread(new Runnable() {
+        gameMechanics.getGs().setSession(session);
+        gameMechanics.run();
 
-            @Override
-            public void run() {
-                for (; ; ) {
-                    try {
-                        Thread.sleep(tickTime);
-                        gs.tick(tickTime);
-                        replicator.writeReplica(gs,cp);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+        /*gameMechanics.initCanvas();
+        gameMechanics.getGs().setSession(session);
+        gameMechanics.writeReplica(gameMechanics.getGs(), ConnectionPool.getInstance());*/
 
-        });
-
-        thread.start();*/
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         // System.out.println("Received " + message.toString());
-        //System.out.println(message.getPayload());
+        String str = message.getPayload().toString();
+        System.out.println(str.substring(str.indexOf("direction") + 12, str.lastIndexOf("\"")));
         Broker broker = new Broker();
         broker.receive(session, message.getPayload());
     }

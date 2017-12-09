@@ -12,9 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by sergey on 3/25/17.
- */
 public class PlayerDao implements Dao<Player> {
     private static final Logger log = LogManager.getLogger(PlayerDao.class);
 
@@ -35,6 +32,17 @@ public class PlayerDao implements Dao<Player> {
                     "values ('%d', '%s');";
 
     @Language("sql")
+    private static final String INSERT_INTO_TABLE_TEMPLATE =
+            "insert into %s (login) " +
+                    "values ('%s');";
+
+    @Language("sql")
+    private static final String DELETE_USER =
+            "delete * " +
+                    "from game.player " +
+                    "where ";
+
+    @Language("sql")
     private static final String RESET_SCHEMA = "drop schema if exists game cascade;\n" +
             "create schema game;";
 
@@ -42,11 +50,20 @@ public class PlayerDao implements Dao<Player> {
     @Language("sql")
     private static final String RESET_TABLE = "DROP TABLE IF EXISTS game.player;\n" +
             "CREATE TABLE game.player (\n" +
-            "  gameId    SERIAL             NOT NULL,\n" +
-            "  login VARCHAR(20) UNIQUE NOT NULL,\n" +
+            "  gameId   SERIAL          ,\n" +
+            "  login    VARCHAR(20)     UNIQUE NOT NULL,\n" +
             "  PRIMARY KEY (login)\n" +
             ");";
-    //TODO: create drop table method to drop at the initialization
+
+    @Language("sql")
+    private static final String CHECK_FOR_PLAYER =
+            "SELECT * from serverdata.list where login = '%s'";
+
+
+    @Language("sql")
+    private static final String GET_PLAYER_RANK =
+            "SELECT rank FROM serverdata.list where login = '%s'";
+
 
     @Override
     public List<Player> getAll() {
@@ -97,6 +114,30 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
+    public void insertIntoTable(String table, String name) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()
+        ) {
+            if (!playerExists(name))
+                stm.execute(String.format(INSERT_INTO_TABLE_TEMPLATE, table, name));
+            else
+                log.error("player already registered");
+        } catch (SQLException e) {
+            log.error("Failed to insert player " + name + " into table " + table, e);
+        }
+    }
+
+    @Override
+    public void delete(Player player) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()
+        ) {
+            stm.execute(String.format(DELETE_USER, player.getLogin()));
+        } catch (SQLException e) {
+            log.error("Failed to create player {}", player.getLogin(), e);
+        }
+    }
+
     public void reset() {
         try (Connection con = DbConnector.getConnection();
              Statement stm = con.createStatement()
@@ -105,6 +146,32 @@ public class PlayerDao implements Dao<Player> {
             stm.execute(String.format(RESET_TABLE));
         } catch (SQLException e) {
             log.error("Failed to reset DB", e);
+        }
+    }
+
+    public boolean playerExists(String name) {
+        try (Connection con = DbConnector.getConnection();
+            Statement stm = con.createStatement()) {
+            ResultSet rs = stm.executeQuery(String.format(CHECK_FOR_PLAYER, name));
+            int rscounter = 0;
+            while (rs.next())
+                rscounter++;
+            return rscounter != 0;
+        } catch (SQLException e) {
+            log.error("Failed to check if player exists");
+            return false;
+        }
+    }
+
+    public int getPlayerRank(String name) {
+        try (Connection con = DbConnector.getConnection();
+        Statement stm = con.createStatement()) {
+            ResultSet rs = stm.executeQuery(String.format(GET_PLAYER_RANK, name));
+            rs.next();
+            return rs.getInt("rank");
+        } catch (SQLException e) {
+            log.error("Failed to get player " + name + "rank");
+            return 0;
         }
     }
 

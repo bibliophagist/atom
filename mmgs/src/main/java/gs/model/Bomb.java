@@ -10,7 +10,7 @@ public class Bomb extends Field implements Positionable, Tickable {
     private static final Logger log = LogManager.getLogger(Bomb.class);
     private final int id;
     private Point point;
-    private long time;
+    private long currentTime;
     private final long lifeTime = 1;
 
     public Bomb(int x, int y, long time) {
@@ -23,11 +23,15 @@ public class Bomb extends Field implements Positionable, Tickable {
 
     @Override
     public void tick(long elapsed) {
-        if (time < elapsed) {
-            time = 0;
-        } else {
-            time -= elapsed;
-        }
+        currentTime += elapsed;
+    }
+
+    public long getLifetimeMillis() {
+        return lifeTime;
+    }
+
+    public boolean isDead() {
+        return currentTime >= lifeTime;
     }
 
     public String toJson() {

@@ -14,25 +14,26 @@ import gs.model.Wall.Type;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Created by sergey on 3/14/17.
- */
 public class GameSession implements Tickable {
     private static final Logger log = LogManager.getLogger(GameSession.class);
 
+    private ConcurrentHashMap<Point, Pawn> allPawns = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Point, Wall> allWalls = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Integer, Bomb> allBombs = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Integer, Explosion> allExplosions = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Point, Bomb> allBombs = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Point, Explosion> allExplosions = new ConcurrentHashMap<>();
 
     private static AtomicLong idGenerator = new AtomicLong();
 
     public static final int PLAYERS_IN_GAME = 2;
 
-    Pawn pawn;
-    private final int playerCount;
+    private final int playersInGame;
     private final long iD = idGenerator.getAndIncrement();
-    private int id = 0;
+
     private WebSocketSession session;
+
+    public GameSession(int playerCount) {
+        this.playersInGame = playerCount;
+    }
 
     public void setSession(WebSocketSession session) {
         this.session = session;
@@ -42,62 +43,34 @@ public class GameSession implements Tickable {
         return session;
     }
 
-    public GameSession(int playerCount) {
-        this.playerCount = playerCount;
+    public ConcurrentHashMap<Point, Pawn> getAllPawns(){
+        return allPawns;
     }
 
-    void test() {
-        Point point = new Point(1, 1);
-        allWalls.put(point, new Wall(1, 1, Wall.Type.Wall, 1));
-        Wall obj = allWalls.get(point);
-        System.out.println(allWalls.values());
-        System.out.println(obj);
-        System.out.println(obj.getType());
+    public ConcurrentHashMap<Point, Bomb> getAllBombs() {
+        return allBombs;
     }
 
-    public void initCanvas() {
-        pawn = new Pawn(1, 1, 300);
+    public ConcurrentHashMap<Point, Explosion> getAllExplosions() {
+        return allExplosions;
+    }
 
-        for (int i = 0; i < 13; ++i) {
-            for (int k = 0; k < 17; ++k) {
-                if (i == 0 || i == 12) {
-                    allWalls.put(new Point(k, i), new Wall(k, i, Type.Wall, incId()));
-                } else if (i == 1 || i == 11) {
-                    if (k == 0 || k == 16) {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Wall, incId()));
-                    } else if (k == 1 || k == 2 || k == 14 || k == 15) {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Grass, incId()));
-                    } else {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Wood, incId()));
-                    }
-                } else if (i == 2 || i == 10) {
-                    if (k == 0 || k == 16) {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Wall, incId()));
-                    } else if (k == 1 || k == 15) {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Grass, incId()));
-                    } else {
-                        if (k % 2 == 0) {
-                            allWalls.put(new Point(k, i), new Wall(k, i, Type.Wall, incId()));
-                        } else {
-                            allWalls.put(new Point(k, i), new Wall(k, i, Type.Wood, incId()));
-                        }
-                    }
-                } else if (i % 2 != 0) {
-                    if (k == 0 || k == 16) {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Wall, incId()));
-                    } else {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Wood, incId()));
-                    }
-                } else {
-                    if (k % 2 == 0) {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Wall, incId()));
-                    } else {
-                        allWalls.put(new Point(k, i), new Wall(k, i, Type.Wood, incId()));
-                    }
-                }
+    public ConcurrentHashMap<Point, Wall> getAllWalls() {
+        return allWalls;
+    }
+
+    public String jsonStringPawns() {
+        if (allPawns.size() == 0) {
+            return null;
+        } else {
+            String objjson = "";
+            for (Point p : allPawns.keySet()) {
+                Pawn obj = allPawns.get(p);
+                objjson = objjson + obj.toJson() + ",";
             }
+            String result = objjson.substring(0, (objjson.length() - 1));
+            return result;
         }
-        //System.out.println(allWalls.values());
     }
 
     public String jsonStringWalls() {
@@ -115,8 +88,8 @@ public class GameSession implements Tickable {
             return null;
         } else {
             String objjson = "";
-            for (Integer i : allBombs.keySet()) {
-                Bomb obj = allBombs.get(i);
+            for (Point p : allBombs.keySet()) {
+                Bomb obj = allBombs.get(p);
                 objjson = objjson + obj.toJson() + ",";
             }
             String result = objjson.substring(0, (objjson.length() - 1));
@@ -129,8 +102,8 @@ public class GameSession implements Tickable {
             return null;
         } else {
             String objjson = "";
-            for (Integer i : allExplosions.keySet()) {
-                Explosion obj = allExplosions.get(i);
+            for (Point p : allExplosions.keySet()) {
+                Explosion obj = allExplosions.get(p);
                 objjson = objjson + obj.toJson() + ",";
             }
             String result = objjson.substring(0, (objjson.length() - 1));
@@ -138,22 +111,23 @@ public class GameSession implements Tickable {
         }
     }
 
-
-    private int incId() {
-        return id++;
-    }
-
     public long getiD() {
         return iD;
     }
 
-    public Pawn getPawn() {
-        return pawn;
+    public Point tileToPixel(Point pos) {
+        int x1 = 32 * pos.getX();
+        int y1 = 32 * pos.getY();
+        return new Point(x1, y1);
     }
 
+    public Point pixelToTile(Point pos) {
+        int x1 = pos.getX() / 32;
+        int y1 = pos.getY() / 32;
+        return new Point(x1, y1);
+    }
+
+    @Override
     public void tick(long elapsed) {
-
     }
-
-    ;
 }
