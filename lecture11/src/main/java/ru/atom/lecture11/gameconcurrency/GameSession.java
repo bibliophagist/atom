@@ -1,15 +1,15 @@
 package ru.atom.lecture11.gameconcurrency;
 
 public class GameSession {
-    private String gameId;
-    private boolean started;
+    private final String gameId;
+    private volatile boolean started;
 
     public GameSession(String gameId) {
         this.gameId = gameId;
     }
 
     public void start() {
-        this.started = started;
+        this.started = true;
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Broken game server implementation
@@ -18,8 +19,8 @@ import java.util.*;
 @Controller
 @RequestMapping("games")
 public class GameResource {
-    private Map<String, GameSession> gameId2game = new HashMap<>();
-    private Map<String, String> player2gameId = new HashMap<>();
+    private final Map<String, GameSession> gameId2game = new ConcurrentHashMap<>();
+    private final Map<String, String> player2gameId = new ConcurrentHashMap<>();
 
     /**
      * curl -XPOST localhost:8080/games/connect -d "name=sasha&gameId=GAME_ID"
@@ -52,10 +53,14 @@ public class GameResource {
         if (playerCount == null) {
             return ResponseEntity.badRequest().body("playerCount not provided");
         }
-        UUID uuid = UUID.randomUUID();
-        GameSession gameSession = new GameSession(uuid.toString());
-        gameId2game.put(uuid.toString(), gameSession);
+        GameSession gameSession;
+        synchronized (this) {
+            UUID uuid = UUID.randomUUID();
+            gameSession = new GameSession(uuid.toString());
+            gameId2game.put(uuid.toString(), gameSession);
+        }
         return ResponseEntity.ok("Successfully created " + gameSession + "\n");
+
     }
 
     /**
@@ -90,7 +95,7 @@ public class GameResource {
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         return "Game server statistics:" +
                 "\ngameId2game=" + gameId2game.values() +
                 "\nplayer2gameId=" + player2gameId;
