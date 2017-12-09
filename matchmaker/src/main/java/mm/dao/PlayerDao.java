@@ -57,8 +57,12 @@ public class PlayerDao implements Dao<Player> {
 
     @Language("sql")
     private static final String CHECK_FOR_PLAYER =
-            "SELECT * from playerlist.list where login = '%s'";
+            "SELECT * from serverdata.list where login = '%s'";
 
+
+    @Language("sql")
+    private static final String GET_PLAYER_RANK =
+            "SELECT rank FROM serverdata.list where login = '%s'";
 
 
     @Override
@@ -110,13 +114,16 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
-    public void insertIntoTable(String tableName, String name) {
+    public void insertIntoTable(String table, String name) {
         try (Connection con = DbConnector.getConnection();
              Statement stm = con.createStatement()
         ) {
-            stm.execute(String.format(INSERT_INTO_TABLE_TEMPLATE, tableName, name));
+            if (!playerExists(name))
+                stm.execute(String.format(INSERT_INTO_TABLE_TEMPLATE, table, name));
+            else
+                log.error("player already registered");
         } catch (SQLException e) {
-            log.error("Failed to register player {}", name, e);
+            log.error("Failed to insert player " + name + " into table " + table, e);
         }
     }
 
@@ -153,6 +160,18 @@ public class PlayerDao implements Dao<Player> {
         } catch (SQLException e) {
             log.error("Failed to check if player exists");
             return false;
+        }
+    }
+
+    public int getPlayerRank(String name) {
+        try (Connection con = DbConnector.getConnection();
+        Statement stm = con.createStatement()) {
+            ResultSet rs = stm.executeQuery(String.format(GET_PLAYER_RANK, name));
+            rs.next();
+            return rs.getInt("rank");
+        } catch (SQLException e) {
+            log.error("Failed to get player " + name + "rank");
+            return 0;
         }
     }
 

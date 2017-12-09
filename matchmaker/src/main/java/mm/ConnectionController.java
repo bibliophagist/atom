@@ -9,12 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
+@CrossOrigin
 @RequestMapping("matchmaker")
 public class ConnectionController {
     private static final Logger log = LogManager.getLogger(ConnectionController.class);
@@ -26,7 +24,6 @@ public class ConnectionController {
     private static HttpHeaders headers = new HttpHeaders();
 
     static {
-        headers.add("Access-Control-Allow-Origin", "*");
         Thread matchMakerThread = new Thread(matchMaker);
         matchMakerThread.start();
         playerDao.reset();
@@ -53,7 +50,7 @@ public class ConnectionController {
             log.info(name + " added to queue");
         } else {
             log.error(name + " cannot be added to queue");
-            //TODO: return error response entity
+            return new ResponseEntity<>("cannot add to queue due to internal server problem, try again later", headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Long gameId = null;
         while (gameId == null) {
@@ -82,9 +79,11 @@ public class ConnectionController {
     )
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> register(@RequestParam("name") String name) {
-        playerDao.insertIntoTable("playerlist.list", name);
+        playerDao.insertIntoTable("serverdata.list", name);
         return new ResponseEntity<>(name + " registered", headers, HttpStatus.OK);
     }
+
+    //TODO: move list outside of matchmaker
 
     /**
      * curl test
