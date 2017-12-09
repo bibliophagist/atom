@@ -39,7 +39,7 @@ public class GameMechanics implements Tickable, Runnable {
     @Override
     public void run() {
         initCanvas();
-        writeReplica(gs,ConnectionPool.getInstance());
+        writeReplica(gs, ConnectionPool.getInstance());
     }
 
     public void clear() {
@@ -58,6 +58,9 @@ public class GameMechanics implements Tickable, Runnable {
     public void handleBomb(GameSession gs, Pawn pawn) {
         System.out.println("i am bombing! ");
         Bomb bomb = new Bomb(pawn.getPosition().getX(), pawn.getPosition().getY(), 300);
+        if (pawn.isPowerful()) {
+            bomb.setPower(2);
+        }
         gs.getAllBombs().put(new Point(pawn.getPosition().getX(), pawn.getPosition().getY()), bomb);
     }
 
@@ -70,11 +73,24 @@ public class GameMechanics implements Tickable, Runnable {
     public void tick(long elapsed) {
         for (Point p : gs.getAllBombs().keySet()) {
             Bomb bomb = gs.getAllBombs().get(p);
+            //TODO добавить силу бомбы
             if (bomb.isDead()) {
                 Wall rightWall = gs.getAllWalls().get(new Point(p.getX() + 1, p.getY()));
                 Wall leftWall = gs.getAllWalls().get(new Point(p.getX() - 1, p.getY()));
                 Wall topWall = gs.getAllWalls().get(new Point(p.getX(), p.getY() + 1));
                 Wall bottomWall = gs.getAllWalls().get(new Point(p.getX(), p.getY() - 1));
+                if (rightWall.getType() == Wall.Type.Wood) {
+                    rightWall.setType(Wall.Type.Grass);
+                }
+                if (leftWall.getType() == Wall.Type.Wood) {
+                    leftWall.setType(Wall.Type.Grass);
+                }
+                if (topWall.getType() == Wall.Type.Wood) {
+                    topWall.setType(Wall.Type.Grass);
+                }
+                if (bottomWall.getType() == Wall.Type.Wood) {
+                    bottomWall.setType(Wall.Type.Grass);
+                }
                 gs.getAllBombs().remove(p);
             }
         }

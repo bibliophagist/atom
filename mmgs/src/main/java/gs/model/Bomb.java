@@ -11,6 +11,7 @@ public class Bomb extends Field implements Positionable, Tickable {
     private final int id;
     private Point point;
     private long currentTime;
+    private int power = 1;
     private final long lifeTime = 1;
 
     public Bomb(int x, int y, long time) {
@@ -19,6 +20,14 @@ public class Bomb extends Field implements Positionable, Tickable {
         this.point = getPosition();
         log.info("Bombid = " + id + "; " + "Bomb place = (" + point.getX() + "," +
                 point.getY() + ")" + "; " + "Bomb timer = " + time);
+    }
+
+    public void setPower(int power) {
+        this.power = power;
+    }
+
+    public int getPower() {
+        return power;
     }
 
     @Override

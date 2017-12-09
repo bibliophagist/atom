@@ -12,12 +12,27 @@ public class Bonus extends Field implements Positionable, Tickable {
     private Point point;
     private long time;
 
-    public Bonus(int x, int y, long time) {
+    public enum Type {
+        speed, bomb, fire
+    }
+
+    private Type type;
+
+    public Bonus(int x, int y, long time, Bonus.Type type) {
         super(x, y);
         this.id = getId();
+        this.type=type;
         this.point = getPosition();
         log.info("Bonusid = " + id + "; " + "Bonus place = (" + point.getX() + "," +
                 point.getY() + ")" + "; " + "Bonus timer = " + time);
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     @Override

@@ -11,6 +11,12 @@ public class Pawn extends Field implements Movable {
     private Point point;
     private long time;
     private int speed;
+    private int finalSpeed;
+    private int speedMultiply = 1; //Бонус на ускорение.
+    private final int bonusTime = 5; //Время действия бонуса
+    private boolean powerful = false; //True если взял бонус на силу
+    private boolean pyromancer = false; //True есси бонус огня
+
     private boolean dead = false;
 
     public Pawn(int x, int y, int speed) {
@@ -22,24 +28,41 @@ public class Pawn extends Field implements Movable {
                 point.getY() + ")" + "; " + "Pawn speed = " + speed);
     }
 
-    public void setDead(){
-        dead=true;
+    public boolean isPowerful() {
+        return powerful;
+    }
+
+    public void setDead() {
+        dead = true;
+    }
+
+    public void setPower() {
+        powerful = true;
+    }
+
+    public void setSpeedMultiply(int acceleration) {
+        this.speedMultiply = acceleration;
+    }
+
+    public void setPyromancer() {
+        pyromancer = true;
     }
 
     @Override
     public Point move(Direction direction, long time) {
+        finalSpeed = speed * speedMultiply;
         switch (direction) {
             case UP:
-                point = new Point(point.getX(), point.getY() + (int) (speed * time));
+                point = new Point(point.getX(), point.getY() + (int) (finalSpeed * time));
                 break;
             case DOWN:
-                point = new Point(point.getX(), point.getY() - (int) (speed * time));
+                point = new Point(point.getX(), point.getY() - (int) (finalSpeed * time));
                 break;
             case RIGHT:
-                point = new Point(point.getX() + (int) (speed * time), point.getY());
+                point = new Point(point.getX() + (int) (finalSpeed * time), point.getY());
                 break;
             case LEFT:
-                point = new Point(point.getX() - (int) (speed * time), point.getY());
+                point = new Point(point.getX() - (int) (finalSpeed * time), point.getY());
                 break;
             default:
                 break;

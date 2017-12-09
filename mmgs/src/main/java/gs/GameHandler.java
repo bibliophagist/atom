@@ -32,12 +32,12 @@ public class GameHandler extends TextWebSocketHandler implements WebSocketHandle
         System.out.println("Socket Connected: " + session);
         String str = session.getUri().toString();
         this.webSocketSession = session;
+        gameMechanics.getGs().setSession(session);
         //System.out.println(str.substring(str.indexOf("gameId")+7,str.indexOf("&")));
         String name = str.substring(str.indexOf("&") + 6);
 
         ConnectionPool.getInstance().add(session, name);
 
-        gameMechanics.getGs().setSession(session);
         gameMechanics.run();
 
         /*gameMechanics.initCanvas();
