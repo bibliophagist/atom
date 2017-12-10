@@ -4,6 +4,7 @@ package gs.gamerepository;
 import gs.GameMechanics;
 import gs.GameService;
 import gs.GameSession;
+import gs.network.ConnectionPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,15 @@ public class GameController {
 
     @Autowired
     GameService gameService;
+    private static GameMechanics gameMechanics;
+
+    public static GameMechanics getGameMechanics() {
+        return gameMechanics;
+    }
+
+    public static void setGameMechanics(GameMechanics gameMechanics) {
+        GameController.gameMechanics = gameMechanics;
+    }
 
     //curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8090/game/create -d "playerCount=1234"
     @RequestMapping(
@@ -32,6 +42,9 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Long> create(@RequestParam("playerCount") int playerCount) {
         long gameId = gameService.create(playerCount);
+        if (gameMechanics == null) {
+            gameMechanics = new GameMechanics(GameRepository.getMap().get(gameId));
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
         return new ResponseEntity<Long>(gameId, headers, HttpStatus.OK);
@@ -44,8 +57,7 @@ public class GameController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Long> start(@RequestParam("gameId") long gameId) {
-        System.out.println("We are inside!");
-        new Thread(new GameMechanics(GameRepository.getMap().get(gameId)), "game-mechanics-" + gameId).start();
+        new Thread(gameMechanics, "game-mechanics-" + gameId).start();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
         return new ResponseEntity<Long>(HttpStatus.OK);

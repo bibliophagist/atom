@@ -5,19 +5,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import gs.geometry.Point;
 
-public class Explosion extends Field implements Positionable, Tickable {
+public class Fire extends Field implements Positionable, Tickable {
     private static final Logger log = LogManager.getLogger(Bomb.class);
     private final int id;
     private Point point;
-    private long currentTime;
-    private final long lifeTime = 1;
+    private long currentTime=0;
+    private final long lifeTime = 30000;
 
-    public Explosion(int x, int y, long time) {
+    public Fire(int x, int y) {
         super(x, y);
         this.id = getId();
         this.point = getPosition();
-        log.info("Explosionid = " + id + "; " + "Explosion place = (" + point.getX() + "," +
-                point.getY() + ")" + "; " + "Explosion timer = " + time);
+        log.info("Explosionid = " + id + "; " + "Fire place = (" + point.getX() + "," +
+                point.getY() + ")" + "; " + "Fire timer = " + lifeTime);
     }
 
     @Override

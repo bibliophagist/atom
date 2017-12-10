@@ -44,30 +44,15 @@ public class Broker {
     }
 
     public void send(@NotNull GameSession gs, @NotNull String player, @NotNull Topic topic, @NotNull String message) {
-        //String message = JsonHelper.toJson(new Message(topic, JsonHelper.toJson(object)));
-        //Message message = new Message(topic, JsonHelper.toJson(object));
-        //WebSocketSession session = connectionPool.getSession(player);
-        //connectionPool.send(session, message);
         String msg = "{\"topic\":\"" + topic + "\",\"data\":{\"objects\":[" + message + "]}}";
-        //gs.getSession().sendMessage(new TextMessage(msg.toCharArray()));
-        //TextMessage check = new TextMessage(JsonHelper.toJson(new Message(topic, message)));
-        TextMessage check = new TextMessage(msg);
-        System.out.println(check.getPayload());
+        TextMessage msgToJson = new TextMessage(msg);
         try {
-            gs.getSession().sendMessage(check);
+            gs.getSession(player).sendMessage(msgToJson);
             ;
         } catch (Throwable t) {
             t.printStackTrace(System.err);
         }
     }
-
-
-    /*public void send(@NotNull GameSession gs) {
-        String message = "";
-        message = "{\"topic\":\"REPLICA\",\"data\":{\"objects\":[" + gs.jsonStringWalls() + "]}}";
-        System.out.println(message);
-        }*/
-
 
     public void handleBomb(WebSocketSession session) {
         log.info("bomb planted");

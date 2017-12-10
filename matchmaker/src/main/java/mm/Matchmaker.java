@@ -18,7 +18,7 @@ public class Matchmaker implements Runnable {
     @Autowired
     GameServiceRequest client = new GameServiceRequest();
     private static final int PLAYER_COUNT = 4;
-    private static final int TIMEOUT = 10;
+    private static final int TIMEOUT = 5;
     private long gameId = 100;
     PlayerDao playerDao = new PlayerDao();
     private BlockingQueue<Player> bronzeQueue = new LinkedBlockingQueue<>();
@@ -63,7 +63,7 @@ public class Matchmaker implements Runnable {
                     if (players.size() > 1 && players.size() < PLAYER_COUNT) {
                         addToDB(players);
                         log.info("timeout, game started with " + players.size() + " players in " + queueName + ", pushed to DB");
-//                        client.start(gameId);
+                        client.start(gameId);
                         //TODO: client.start starts a 10 second timer before starting the game
                         players.clear();
                     } else
@@ -71,8 +71,8 @@ public class Matchmaker implements Runnable {
                 } else if (!inGamePlayers.containsKey(newPlayer.getLogin())) {
                     players.add(newPlayer);
                     if (players.size() == 1) {
-//                        gameId = Long.parseLong(client.create(PLAYER_COUNT));
-                        gameId++; //FIXME: should be removed when gs works
+                        gameId = Long.parseLong(client.create(PLAYER_COUNT));
+                        //gameId++; //FIXME: should be removed when gs works
                         log.info("created new game with gameId = " + gameId);
                     }
                     log.info(newPlayer.getLogin() + " added to table");
@@ -85,7 +85,7 @@ public class Matchmaker implements Runnable {
             if (players.size() == PLAYER_COUNT) {
                 addToDB(players);
                 log.info("game started with maximum players in " + queueName + ", pushed to DB");
-//                client.start(gameId);
+                client.start(gameId);
                 players.clear();
             }
         }

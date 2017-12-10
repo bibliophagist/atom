@@ -6,13 +6,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import gs.geometry.Point;
 
+import java.util.Comparator;
+
 public class Bomb extends Field implements Positionable, Tickable {
     private static final Logger log = LogManager.getLogger(Bomb.class);
     private final int id;
     private Point point;
     private long currentTime;
     private int power = 1;
-    private final long lifeTime = 1;
+    private final long lifeTime = 300;
 
     public Bomb(int x, int y, long time) {
         super(x, y);

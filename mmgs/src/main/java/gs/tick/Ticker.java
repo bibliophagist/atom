@@ -1,6 +1,8 @@
 package gs.tick;
 
 
+import gs.GameMechanics;
+import gs.gamerepository.GameController;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
@@ -18,7 +20,8 @@ public class Ticker {
     public void gameLoop() {
         while (!Thread.currentThread().isInterrupted()) {
             long started = System.currentTimeMillis();
-            act(FRAME_TIME);
+            //act(FRAME_TIME);
+            GameController.getGameMechanics().tick(5);
             long elapsed = System.currentTimeMillis() - started;
             if (elapsed < FRAME_TIME) {
                 log.info("All tick finish at {} ms", elapsed);

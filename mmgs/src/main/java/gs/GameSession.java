@@ -1,7 +1,7 @@
 package gs;
 
 import gs.model.Bomb;
-import gs.model.Explosion;
+import gs.model.Fire;
 import gs.model.Pawn;
 import gs.model.Wall;
 import gs.tick.Tickable;
@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.socket.WebSocketSession;
 import gs.geometry.Point;
-import gs.model.Wall.Type;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -17,46 +16,24 @@ import java.util.concurrent.atomic.AtomicLong;
 public class GameSession implements Tickable {
     private static final Logger log = LogManager.getLogger(GameSession.class);
 
-    private ConcurrentHashMap<Point, Pawn> allPawns = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Point, Wall> allWalls = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Point, Bomb> allBombs = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Point, Explosion> allExplosions = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Point, Pawn> allPawns = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Point, Wall> allWalls = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Point, Bomb> allBombs = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Point, Fire> allFire = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, WebSocketSession> allSessions = new ConcurrentHashMap<>();
 
     private static AtomicLong idGenerator = new AtomicLong();
-
-    public static final int PLAYERS_IN_GAME = 2;
-
     private final int playersInGame;
-    private final long iD = idGenerator.getAndIncrement();
+    private boolean gameSessionIsOver = false;
 
-    private WebSocketSession session;
+    private final long iD = idGenerator.getAndIncrement();
 
     public GameSession(int playerCount) {
         this.playersInGame = playerCount;
     }
 
-    public void setSession(WebSocketSession session) {
-        this.session = session;
-    }
-
-    public WebSocketSession getSession() {
-        return session;
-    }
-
-    public ConcurrentHashMap<Point, Pawn> getAllPawns(){
-        return allPawns;
-    }
-
-    public ConcurrentHashMap<Point, Bomb> getAllBombs() {
-        return allBombs;
-    }
-
-    public ConcurrentHashMap<Point, Explosion> getAllExplosions() {
-        return allExplosions;
-    }
-
-    public ConcurrentHashMap<Point, Wall> getAllWalls() {
-        return allWalls;
+    public void addSession(WebSocketSession session, String player) {
+        allSessions.put(player, session);
     }
 
     public String jsonStringPawns() {
@@ -98,12 +75,12 @@ public class GameSession implements Tickable {
     }
 
     public String jsonStringExplosions() {
-        if (allExplosions.size() == 0) {
+        if (allFire.size() == 0) {
             return null;
         } else {
             String objjson = "";
-            for (Point p : allExplosions.keySet()) {
-                Explosion obj = allExplosions.get(p);
+            for (Point p : allFire.keySet()) {
+                Fire obj = allFire.get(p);
                 objjson = objjson + obj.toJson() + ",";
             }
             String result = objjson.substring(0, (objjson.length() - 1));
@@ -115,16 +92,36 @@ public class GameSession implements Tickable {
         return iD;
     }
 
-    public Point tileToPixel(Point pos) {
-        int x1 = 32 * pos.getX();
-        int y1 = 32 * pos.getY();
-        return new Point(x1, y1);
+    public void kilGameSession(){
+        this.gameSessionIsOver=true;
     }
 
-    public Point pixelToTile(Point pos) {
-        int x1 = pos.getX() / 32;
-        int y1 = pos.getY() / 32;
-        return new Point(x1, y1);
+    public boolean isGameSessionIsOver() {
+        return gameSessionIsOver;
+    }
+
+    public WebSocketSession getSession(String name) {
+        return allSessions.get(name);
+    }
+
+    public ConcurrentHashMap<String, WebSocketSession> getAllSessions() {
+        return allSessions;
+    }
+
+    public ConcurrentHashMap<Point, Pawn> getAllPawns() {
+        return allPawns;
+    }
+
+    public ConcurrentHashMap<Point, Bomb> getAllBombs() {
+        return allBombs;
+    }
+
+    public ConcurrentHashMap<Point, Fire> getAllFire() {
+        return allFire;
+    }
+
+    public ConcurrentHashMap<Point, Wall> getAllWalls() {
+        return allWalls;
     }
 
     @Override
