@@ -3,8 +3,9 @@ ServerProxy = Class.extend({
     //gameServerUrl: "34.229.24.192:22013",
     //gameServerUrl: "192.168.99.100:8090",
     gameServerUrl: "localhost:8090",
-    matchMakerUrl: "http://localhost:8080/matchmaker/join",
+    matchMakerUrl: "http://localhost:8080/matchmaker/",
     gameId: "1234",
+    playerName: "",
 
     socket: null,
 
@@ -34,7 +35,8 @@ ServerProxy = Class.extend({
 
     getSessionIdFromMatchMaker: function () {
         var that = this;
-        var login = $("#loginInput").val();
+        var login = that.playerName;
+        var password = that.playerPassword;
         if(!login){
             alert("Please input login");
             console.log("Empty login, retry login");
@@ -57,8 +59,9 @@ ServerProxy = Class.extend({
             },
             //processData: false,
             type: 'POST',
-            url: that.matchMakerUrl
+            url: that.matchMakerUrl + "join"
         });
+
     },
 
     connectToGameServer: function (gameId, login) {

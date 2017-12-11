@@ -68,6 +68,31 @@ public class ConnectionController {
     /**
      * curl test
      * <p>
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/login -d "login=test&password=qwer"
+     *</p>
+     */
+
+    @RequestMapping(
+            path = "login",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> login(@RequestParam("login") String login,
+                                        @RequestParam("password") String password) {
+        if (playerDao.login(login,password)) {
+            log.info("correct password for player " + login);
+            return new ResponseEntity<>("+", headers, HttpStatus.OK);
+        }
+        else {
+            log.info("incorrect password for player " + login);
+            return new ResponseEntity<>("-", headers, HttpStatus.OK);
+        }
+    }
+
+    /**
+     * curl test
+     * <p>
      * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/register -d "name=test"
      *</p>
      */

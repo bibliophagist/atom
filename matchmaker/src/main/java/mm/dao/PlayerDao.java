@@ -64,6 +64,11 @@ public class PlayerDao implements Dao<Player> {
     private static final String GET_PLAYER_RANK =
             "SELECT rank FROM serverdata.list where login = '%s'";
 
+    @Language("sql")
+    private static final String LOGIN =
+            "SELECT password FROM serverdata.list where login = '%s' " +
+                    "and password = '%s';";
+
 
     @Override
     public List<Player> getAll() {
@@ -172,6 +177,17 @@ public class PlayerDao implements Dao<Player> {
         } catch (SQLException e) {
             log.error("Failed to get player " + name + "rank");
             return 0;
+        }
+    }
+
+    public boolean login(String login, String password) {
+        try (Connection con = DbConnector.getConnection();
+        Statement stm = con.createStatement()) {
+            ResultSet rs = stm.executeQuery(String.format(LOGIN, login, password));
+            return rs.next();
+        } catch (SQLException e) {
+            log.error("Failed to login player " + login + "\ndue to exception: " + e);
+            return false;
         }
     }
 
