@@ -14,6 +14,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 @Component
 public class GameHandler extends TextWebSocketHandler implements WebSocketHandler {
 
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
@@ -21,6 +22,7 @@ public class GameHandler extends TextWebSocketHandler implements WebSocketHandle
         String str = session.getUri().toString();
         String name = str.substring(str.indexOf("&") + 6);
         GameController.getGameMechanics().getGs().addSession(session, name);
+        GameController.getGameMechanics().getGs().increasePlayersInGame(name);
         //System.out.println(str.substring(str.indexOf("gameId")+7,str.indexOf("&")));
 
         ConnectionPool.getInstance().add(session, name);
@@ -33,7 +35,7 @@ public class GameHandler extends TextWebSocketHandler implements WebSocketHandle
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         // System.out.println("Received " + message.toString());
         String str = message.getPayload().toString();
-        System.out.println(str);
+        //System.out.println(str);
         //System.out.println(str.substring(str.indexOf("direction") + 12, str.lastIndexOf("\"")));
         Broker broker = new Broker();
         broker.receive(session, message.getPayload());
@@ -41,7 +43,7 @@ public class GameHandler extends TextWebSocketHandler implements WebSocketHandle
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-        GameController.getGameMechanics().clear();
+//        GameController.getGameMechanics().clear();
         System.out.println("Socket Closed: [" + closeStatus.getCode() + "] " + closeStatus.getReason());
         super.afterConnectionClosed(session, closeStatus);
     }

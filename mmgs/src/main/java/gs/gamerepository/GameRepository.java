@@ -16,7 +16,7 @@ public class GameRepository {
     }
 
     public static long newSession(int playerCount) {
-        GameSession gameSession = new GameSession(playerCount);
+        GameSession gameSession = new GameSession();
         map.put(gameSession.getiD(), gameSession);
         return gameSession.getiD();
     }

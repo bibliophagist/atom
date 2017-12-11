@@ -3,23 +3,27 @@ package gs;
 import gs.geometry.Point;
 import gs.inputqueue.InputQueue;
 import gs.message.Message;
-import gs.model.Bomb;
-import gs.model.Fire;
-import gs.model.Pawn;
-import gs.model.Wall;
+import gs.message.Topic;
+import gs.model.*;
 import gs.replicator.Replicator;
 import gs.tick.Tickable;
 import gs.tick.Ticker;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import javax.websocket.CloseReason;
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class GameMechanics implements Tickable, Runnable {
     private static final Logger log = LogManager.getLogger(GameMechanics.class);
     private static final int TIMEOUT = 10;
     private final Replicator replicator = new Replicator();
     private Ticker ticker = new Ticker();
+    private final ConcurrentHashMap<String, Boolean> bombHasBeenPlanted = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Boolean> moveHasBeenMade = new ConcurrentHashMap<>();
 
-    private GameSession gs = new GameSession(4);//FIXME исправить после изменения matchmaker'a
+    private GameSession gs = new GameSession();//FIXME исправить после изменения matchmaker'a
 
     public GameSession getGs() {
         return gs;
@@ -39,26 +43,58 @@ public class GameMechanics implements Tickable, Runnable {
         ticker.gameLoop();
     }
 
-    //TODO может чистить больше?
+    //Чистим очередь выполняя первые указы
     public void clear() {
+        for (String name : gs.getAllPawns().keySet()) {
+            bombHasBeenPlanted.put(name, false);
+            moveHasBeenMade.put(name, false);
+        }
         while (!InputQueue.getQueue().isEmpty()) {
-            InputQueue.getQueue().poll();
+            Message message = InputQueue.getQueue().poll();
+            if (message.getTopic().equals(Topic.MOVE) && !moveHasBeenMade.get(message.getOwner())) {
+                handleMove(message, gs.getAllPawns().get(message.getOwner()));
+                moveHasBeenMade.put(message.getOwner(), true);
+            } else if (message.getTopic().equals(Topic.PLANT_BOMB) && !bombHasBeenPlanted.get(message.getOwner())) {
+                handleBomb(gs.getAllPawns().get(message.getOwner()));
+                bombHasBeenPlanted.put(message.getOwner(), true);
+            }
+        }
+        bombHasBeenPlanted.clear();
+        moveHasBeenMade.clear();
+    }
+
+    public void handleMove(Message msg, Pawn pawn) {
+        if (msg.getData().equals("{\"direction\":\"RIGHT\"}")) {
+            Point right = pawn.move(Movable.Direction.RIGHT, 1);
+            if (gs.getAllWalls().get(pixelToTile(right)).getType() != Wall.Type.Grass) {
+                pawn.move(Movable.Direction.LEFT, 1);
+            }
+        } else if (msg.getData().equals("{\"direction\":\"LEFT\"}")) {
+            Point left = pawn.move(Movable.Direction.LEFT, 1);
+            if (gs.getAllWalls().get(pixelToTile(left)).getType() != Wall.Type.Grass) {
+                pawn.move(Movable.Direction.RIGHT, 1);
+            }
+        } else if (msg.getData().equals("{\"direction\":\"UP\"}")) {
+            Point up = pawn.move(Movable.Direction.UP, 1);
+            if (gs.getAllWalls().get(pixelToTile(up)).getType() != Wall.Type.Grass) {
+                pawn.move(Movable.Direction.DOWN, 1);
+            }
+        } else if (msg.getData().equals("{\"direction\":\"DOWN\"}")) {
+            Point down = pawn.move(Movable.Direction.DOWN, 1);
+            if (gs.getAllWalls().get(pixelToTile(down)).getType() != Wall.Type.Grass) {
+                pawn.move(Movable.Direction.UP, 1);
+            }
+        } else {
+            log.info("Wrong direction or bad message!");
         }
     }
 
-    //TODO двигать игрока в указаном направлении
-    public void handleMove(Message msg, Pawn pawn) {
-        System.out.println("i am moving! " + msg);
-
-    }
-
-    public void handleBomb(GameSession gs, Pawn pawn) {
-        System.out.println("i am bombing! ");
-        Bomb bomb = new Bomb(pawn.getPosition().getX(), pawn.getPosition().getY(), 300);
+    public void handleBomb(Pawn pawn) {
+        Bomb bomb = new Bomb(pawn.getPoint().getX(), pawn.getPoint().getY(), 300);
         if (pawn.isPowerful()) {
             bomb.setPower(2);
         }
-        gs.getAllBombs().put(new Point(pixelToTile(pawn.getPosition()).getX(), pixelToTile(pawn.getPosition()).getY()), bomb);
+        gs.getAllBombs().put(new Point(pixelToTile(pawn.getPoint()).getX(), pixelToTile(pawn.getPoint()).getY()), bomb);//TODO ставить красиво (сейчас не в центре ячейки)
     }
 
     public void writeReplica(GameSession gs) {
@@ -67,8 +103,7 @@ public class GameMechanics implements Tickable, Runnable {
 
     @Override
     public void tick(long elapsed) {
-        writeReplica(gs);
-        System.out.println("Kappa");
+        clear();
         for (Point p : gs.getAllBombs().keySet()) {
             Bomb bomb = gs.getAllBombs().get(p);
             bomb.tick(elapsed);
@@ -125,6 +160,18 @@ public class GameMechanics implements Tickable, Runnable {
                 gs.getAllBombs().remove(p);
             }
         }
+        for (String name : gs.getAllPawns().keySet()) {//FIXME dying animation
+            if (gs.getAllFire().containsKey(pixelToTile(gs.getAllPawns().get(name).getPoint()))) {
+                gs.getAllPawns().get(name).setPoint(-100,-100);
+                gs.getAllSessions().remove(name);
+//                try {
+//                    gs.getAllSessions().get(name).close();
+//                    gs.getAllSessions().remove(name);
+//                } catch (IOException e) {
+//                    log.info("Pawn died, but session can't be closed!");
+//                }
+            }
+        }
         for (Point p : gs.getAllFire().keySet()) {
             Fire fire = gs.getAllFire().get(p);
             fire.tick(elapsed);
@@ -132,15 +179,12 @@ public class GameMechanics implements Tickable, Runnable {
                 gs.getAllFire().remove(p);
             }
         }
+        writeReplica(gs);
     }
 
     public void initCanvas() {
-        //getAllPawns().put(new Point(32, 32), new Pawn(32, 32, 300));
-        gs.getAllBombs().put(pixelToTile(new Point(64, 32)), new Bomb(64, 32, 300));//TODO ставить красиво (сейчас не в центре ячейки)
-        gs.getAllBombs().get(pixelToTile(new Point(64, 32))).setPower(2);
-        gs.getAllPawns().put(pixelToTile(new Point(480, 32)), new Pawn(480, 32, 300));
-        gs.getAllPawns().put(pixelToTile(new Point(32, 352)), new Pawn(32, 352, 300));
-        gs.getAllPawns().put(pixelToTile(new Point(480, 352)), new Pawn(480, 352, 300));
+//        gs.getAllBombs().put(pixelToTile(new Point(64, 32)), new Bomb(64, 32, 300));
+//        gs.getAllBombs().get(pixelToTile(new Point(64, 32))).setPower(2);
         for (int i = 0; i < 13; ++i) {
             for (int k = 0; k < 17; ++k) {
                 if (i == 0 || i == 12) {
