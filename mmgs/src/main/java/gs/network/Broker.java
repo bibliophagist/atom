@@ -30,17 +30,9 @@ public class Broker {
     }
 
     public void receive(@NotNull WebSocketSession session, @NotNull String msg) {
-        //log.info("RECEIVED: " + msg);
-        //System.out.println("RECEIVED: " + msg);
         Message message = JsonHelper.fromJson(msg, Message.class);
-        inputQueue.addToQueue(session, message);
-
-        //System.out.println(inputQueue.getQueue().peek().getData());
-        /*if (message.getTopic().equals(Topic.MOVE)) {
-            handleMove(session, message.getData());
-        } else if (message.getTopic().equals(Topic.PLANT_BOMB)) {
-            handleBomb(session);
-        }*/
+        message.setOwner(ConnectionPool.getInstance().getPlayer(session));
+        inputQueue.addToQueue(message);
     }
 
     public void send(@NotNull GameSession gs, @NotNull String player, @NotNull Topic topic, @NotNull String message) {
@@ -48,19 +40,9 @@ public class Broker {
         TextMessage msgToJson = new TextMessage(msg);
         try {
             gs.getSession(player).sendMessage(msgToJson);
-            ;
         } catch (Throwable t) {
             t.printStackTrace(System.err);
         }
-    }
-
-    public void handleBomb(WebSocketSession session) {
-        log.info("bomb planted");
-    }
-
-    public void broadcast(@NotNull Topic topic, @NotNull Object object) {
-        String message = JsonHelper.toJson(new Message(topic, JsonHelper.toJson(object)));
-        connectionPool.broadcast(message);
     }
 
 }

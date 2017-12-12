@@ -10,7 +10,7 @@ public class Fire extends Field implements Positionable, Tickable {
     private final int id;
     private Point point;
     private long currentTime=0;
-    private final long lifeTime = 30000;
+    private final long lifeTime = 300;
 
     public Fire(int x, int y) {
         super(x, y);

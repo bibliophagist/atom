@@ -41,7 +41,7 @@ public class GameController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Long> create(@RequestParam("playerCount") int playerCount) {
-        long gameId = gameService.create(playerCount);
+        long gameId = gameService.create(playerCount); //FIXME убрать кол-во игроков?
         if (gameMechanics == null) {
             gameMechanics = new GameMechanics(GameRepository.getMap().get(gameId));
         }

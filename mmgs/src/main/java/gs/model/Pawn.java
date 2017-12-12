@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import gs.geometry.Point;
 
-public class Pawn extends Field implements Movable {
+public class Pawn extends Field implements Movable, Cloneable {
     private static final Logger log = LogManager.getLogger(Bomb.class);
     private final int id;
     private Point point;
@@ -28,8 +28,26 @@ public class Pawn extends Field implements Movable {
                 point.getY() + ")" + "; " + "Pawn speed = " + speed);
     }
 
+    public int getSpeed() {
+        return speed;
+    }
+
+
     public boolean isPowerful() {
         return powerful;
+    }
+
+    @Override
+    public Point getPosition() {
+        return super.getPosition();
+    }
+
+    public Point getPoint() {
+        return point;
+    }
+
+    public void setPoint(int x, int y) {
+        this.point = new Point(x, y);
     }
 
     public void setDead() {
@@ -46,6 +64,15 @@ public class Pawn extends Field implements Movable {
 
     public void setPyromancer() {
         pyromancer = true;
+    }
+
+    @Override
+    public Pawn clone() {
+        try {
+            return (Pawn) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -81,9 +108,8 @@ public class Pawn extends Field implements Movable {
     }
 
     public String toJson() {
-        Point pos = getPosition();
         String obj = "{\"type\":\"" + this.getClass().getSimpleName() + "\",\"id\":" +
-                this.getId() + ",\"position\":{\"x\":" + pos.getX() + ",\"y\":" + pos.getY() + "}}";
+                this.getId() + ",\"position\":{\"x\":" + point.getX() + ",\"y\":" + point.getY() + "}}";
         return obj;
     }
 }

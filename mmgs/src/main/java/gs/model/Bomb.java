@@ -14,7 +14,7 @@ public class Bomb extends Field implements Positionable, Tickable {
     private Point point;
     private long currentTime;
     private int power = 1;
-    private final long lifeTime = 300;
+    private final long lifeTime = 600;
 
     public Bomb(int x, int y, long time) {
         super(x, y);
