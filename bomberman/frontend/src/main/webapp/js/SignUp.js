@@ -32,9 +32,9 @@ SignUp = Class.extend({
                             document.getElementById("loginButton").style.display = "none";
                             document.getElementById("signupButton").style.display = "none";
                             gGameEngine.serverProxy.playerName = login;
-                            document.getElementById("loginedInfo").innerHTML = "You are now logined with name <b>" + login + "</b>";
+                            document.getElementById("loginedInfo").innerHTML = "Login: <b>" + login + "</b>";
                             document.getElementById("signOut").style.display = "block";
-                            document.getElementById("loginedInfo").style.display = "block";
+                            document.getElementById("loginedInfo").style.display = "inline";
                             document.getElementById("game").style.display = "block";
                         }
                         else {

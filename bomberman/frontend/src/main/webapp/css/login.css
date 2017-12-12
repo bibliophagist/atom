@@ -57,6 +57,7 @@ button:focus {
     border: none;
     padding: 14px 20px;
     background-color: rgba(178, 0, 14, 0.75);
+    margin: 10px;
 }
 
 .signoutbtn:hover,
@@ -90,14 +91,14 @@ button:focus {
     background-color: #fefefe;
     margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
     border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
+    width: 50%; /* Could be more or less, depending on screen size */
 }
 
 /* The Close Button (x) */
 .close {
     position: absolute;
     right: 35px;
-    top: 15px;
+    top: 80px;
     color: #000;
     font-size: 40px;
     font-weight: bold;
@@ -118,8 +119,8 @@ button:focus {
 
 /* Add Zoom Animation */
 .animate {
-    -webkit-animation: animatezoom 0.6s;
-    animation: animatezoom 0.6s
+    -webkit-animation: animatezoom 0.2s;
+    animation: animatezoom 0.2s
 }
 
 @-webkit-keyframes animatezoom {

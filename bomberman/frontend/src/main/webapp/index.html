@@ -30,6 +30,7 @@
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <link rel="stylesheet" type="text/css" href="css/login.css">
+    <link rel="stylesheet" type="text/css" href="css/menu.css">
 </head>
 <body onload="gGameEngine.load()">
 	
@@ -45,7 +46,7 @@
                 <label><b>Password</b></label>
                 <input id="loginPassword" type="password" placeholder="Enter Password" name="psw" required>
                 <p id="loginError" style="color: red; size: 14px; display: none; "></p>
-                <div class="container" style="background-color:#f1f1f1">
+                <div class="container" style="background-color:#f1f1f1; width: auto">
                     <button type="button" onclick="var login = new Login; login.login();" class="loginbtn">Login</button>
                     <button type="button" onclick="document.getElementById('loginModal').style.display='none'" class="cancelbtn">Cancel</button>
                 </div>
@@ -94,7 +95,14 @@
         }
     }
     </script>
-	
+
+    <div class="navbar">
+        <button id = "loginButton" onclick="document.getElementById('loginModal').style.display='block'" style="width:auto; margin: 10px; float: right;">Login</button>
+        <button id = "signupButton" onclick="document.getElementById('signupModal').style.display='block'" style="width:auto; margin: 10px; float: right;">Sign Up</button>
+        <p id="loginedInfo" class="logininfo"></p>
+        <button id = "signOut" onclick="var signOut = new SignOut; signOut.signOut();" style = "display: none;" class="signoutbtn">Sign out</button>
+
+    </div>
 	
     <div class="container">
         <div class="page-header">
@@ -105,12 +113,6 @@
             <hr>
         </div>
 
-        <div style="height: 60px">
-            <button id = "loginButton" onclick="document.getElementById('loginModal').style.display='block'" style="width:auto; float: left;">Login</button>
-            <button id = "signupButton" onclick="document.getElementById('signupModal').style.display='block'" style="width:auto; float: right;">Sign Up</button>
-            <p id="loginedInfo" style = "display: none; width: 50%"></p>
-            <button id = "signOut" onclick="var signOut = new SignOut; signOut.signOut();" style = "display: none;" class="signoutbtn">Sign out</button>
-        </div>
         <div>
             <h3 >How to play</h3>
             <ul>
@@ -128,8 +130,9 @@
                 <img src="img/github.png" width="25">
               <a href="http://gojava.ru">  Contribute this game </a>
             </div>
-            <p class="pull-left">&copy; 2017 Created by <a href="http://matousskala.cz">Sergey Rybalkin, Alexander Pomosov</a></p>
-                Credits: <a href="http://gojava.ru">Go Java</a> with us! Web client inspired by <a href="http://matousskala.cz">Matt Skala</a>
+            Credits:
+            <p class="pull-left">&copy; 2017 Created by <a href="http://gojava.ru">Sergey Rybalkin, Alexander Pomosov</a></p>
+                 <a href="http://gojava.ru">Go Java</a> with us! Web client inspired by <a href="http://matousskala.cz">Matt Skala</a>
         </div>
     </div>
 </body>
