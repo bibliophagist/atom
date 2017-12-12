@@ -163,13 +163,12 @@ public class GameMechanics implements Tickable, Runnable {
         for (String name : gs.getAllPawns().keySet()) {//FIXME dying animation
             if (gs.getAllFire().containsKey(pixelToTile(gs.getAllPawns().get(name).getPoint()))) {
                 gs.getAllPawns().get(name).setPoint(-100,-100);
-                gs.getAllSessions().remove(name);
-//                try {
-//                    gs.getAllSessions().get(name).close();
-//                    gs.getAllSessions().remove(name);
-//                } catch (IOException e) {
-//                    log.info("Pawn died, but session can't be closed!");
-//                }
+                try {
+                    gs.getAllSessions().get(name).close();
+                    gs.getAllSessions().remove(name);
+                } catch (IOException e) {
+                    log.info("Pawn died, but session can't be closed!");
+                }
             }
         }
         for (Point p : gs.getAllFire().keySet()) {

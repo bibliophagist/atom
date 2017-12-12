@@ -46,10 +46,10 @@ Messages = Class.extend({
     },
 
     handlePossess: function (msg) {
-        gInputEngine.possessed = parseInt(msg.data);
+        gInputEngine.possessed = parseInt(msg.data.objects[0]);
     },
 
-    handlePawn: function(obj) {
+    handlePawn: function (obj) {
         var player = gGameEngine.players.find(function (el) {
             return el.id === obj.id;
         });
@@ -65,7 +65,7 @@ Messages = Class.extend({
         }
     },
 
-    handleBomb: function(obj) {
+    handleBomb: function (obj) {
         var bomb = gGameEngine.bombs.find(function (el) {
             return el.id === obj.id;
         });
