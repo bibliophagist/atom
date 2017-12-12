@@ -18,7 +18,7 @@ public class Matchmaker implements Runnable {
     @Autowired
     GameServiceRequest client = new GameServiceRequest();
     private static final int PLAYER_COUNT = 4;
-    private static final int TIMEOUT = 5;
+    private static final int TIMEOUT = 20;
     private long gameId = 100;
     PlayerDao playerDao = new PlayerDao();
     private BlockingQueue<Player> bronzeQueue = new LinkedBlockingQueue<>();

@@ -1,6 +1,7 @@
 package mm;
 
 import mm.dao.PlayerDao;
+import mm.dao.returnValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import static mm.dao.returnValue.TRUE;
+import static mm.dao.returnValue.FALSE;
+import static mm.dao.returnValue.ERROR;
 
 @Controller
 @CrossOrigin
@@ -41,7 +46,7 @@ public class ConnectionController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> join(@RequestParam("name") String name) {
-        if (!playerDao.playerExists(name)) {
+        if (!(playerDao.playerExists(name)==TRUE)) {
             //TODO: change HttpStatus
             return new ResponseEntity<>("no player with such name, use register instead", headers, HttpStatus.BAD_REQUEST);
         }
@@ -68,7 +73,38 @@ public class ConnectionController {
     /**
      * curl test
      * <p>
-     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/register -d "name=test"
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/login -d "login=test&password=qwer"
+     *</p>
+     */
+
+    @RequestMapping(
+            path = "login",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> login(@RequestParam("login") String login,
+                                        @RequestParam("password") String password) {
+        switch (playerDao.login(login, password)) {
+            case TRUE:
+                log.info("correct password for player " + login);
+                return new ResponseEntity<>("+", headers, HttpStatus.OK);
+
+            case FALSE:
+                log.info("incorrect password for player " + login);
+                return new ResponseEntity<>("-", headers, HttpStatus.OK);
+
+            case ERROR:
+                log.error("Failed to login player" + login );
+                return new ResponseEntity<>("", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return null;
+    }
+
+    /**
+     * curl test
+     * <p>
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/register -d "login=test&password=qwer"
      *</p>
      */
 
@@ -78,9 +114,19 @@ public class ConnectionController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
     )
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> register(@RequestParam("name") String name) {
-        playerDao.insertIntoTable("serverdata.list", name);
-        return new ResponseEntity<>(name + " registered", headers, HttpStatus.OK);
+    public ResponseEntity<String> register(@RequestParam("login") String login,
+                                           @RequestParam("password") String password) {
+        if (playerDao.playerExists(login) == TRUE) {
+            log.error("Player " + login + " already exists");
+            return new ResponseEntity<>("-", headers, HttpStatus.OK);
+        } else if (playerDao.register(login, password) == TRUE) {
+            log.info("Player " + login + " registered with password " + password);
+            return new ResponseEntity<>("+", headers, HttpStatus.OK);
+        }
+        else {
+            log.error("Failed to register player" + login );
+            return new ResponseEntity<>("", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     //TODO: move list outside of matchmaker

@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static mm.dao.returnValue.TRUE;
+import static mm.dao.returnValue.FALSE;
+import static mm.dao.returnValue.ERROR;
+
 public class PlayerDao implements Dao<Player> {
     private static final Logger log = LogManager.getLogger(PlayerDao.class);
 
@@ -64,6 +68,15 @@ public class PlayerDao implements Dao<Player> {
     private static final String GET_PLAYER_RANK =
             "SELECT rank FROM serverdata.list where login = '%s'";
 
+    @Language("sql")
+    private static final String LOGIN =
+            "SELECT password FROM serverdata.list where login = '%s' " +
+                    "and password = '%s';";
+
+    @Language("sql")
+    private static final String REGISTER =
+            "INSERT INTO serverdata.list (login,password) " +
+                    "VALUES ('%s', '%s');";
 
     @Override
     public List<Player> getAll() {
@@ -118,7 +131,7 @@ public class PlayerDao implements Dao<Player> {
         try (Connection con = DbConnector.getConnection();
              Statement stm = con.createStatement()
         ) {
-            if (!playerExists(name))
+            if (!(playerExists(name) == TRUE))
                 stm.execute(String.format(INSERT_INTO_TABLE_TEMPLATE, table, name));
             else
                 log.error("player already registered");
@@ -149,17 +162,19 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
-    public boolean playerExists(String name) {
+    public returnValue playerExists(String name) {
         try (Connection con = DbConnector.getConnection();
             Statement stm = con.createStatement()) {
             ResultSet rs = stm.executeQuery(String.format(CHECK_FOR_PLAYER, name));
             int rscounter = 0;
             while (rs.next())
                 rscounter++;
-            return rscounter != 0;
+            if (rscounter != 0)
+                return TRUE;
+            return FALSE;
         } catch (SQLException e) {
             log.error("Failed to check if player exists");
-            return false;
+            return ERROR;
         }
     }
 
@@ -172,6 +187,31 @@ public class PlayerDao implements Dao<Player> {
         } catch (SQLException e) {
             log.error("Failed to get player " + name + "rank");
             return 0;
+        }
+    }
+
+    public returnValue login(String login, String password) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()) {
+            ResultSet rs = stm.executeQuery(String.format(LOGIN, login, password));
+            if (rs.next())
+                return TRUE;
+            else
+                return FALSE;
+        } catch (SQLException e) {
+            log.error("Failed to login player " + login + "\ndue to exception: " + e);
+            return ERROR;
+        }
+    }
+
+    public returnValue register(String login, String password) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()) {
+            stm.execute(String.format(REGISTER, login, password));
+            return TRUE;
+        } catch (SQLException e) {
+            log.error("Failed to register player " + login + "\ndue to exception: " + e);
+            return ERROR;
         }
     }
 
