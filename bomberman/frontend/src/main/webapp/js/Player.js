@@ -81,6 +81,7 @@ Player = Entity.extend({
         } else {
             this.animate('idle');
         }
+
     },
 
     /**

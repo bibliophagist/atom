@@ -19,7 +19,6 @@ public class GameHandler extends TextWebSocketHandler implements WebSocketHandle
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
         System.out.println("Socket Connected: " + session);
-        System.out.println(session.getId());
         String str = session.getUri().toString();
         String name = str.substring(str.indexOf("&") + 6);
         GameController.getGameMechanics().getGs().addSession(session, name);
