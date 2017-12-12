@@ -19,6 +19,11 @@ button {
     width: 100%;
 }
 
+button:hover,
+button:focus {
+    background-color: #2b8b49;
+}
+
 .loginbtn {
 	float: right;
 	padding: 14px 20px;
@@ -33,10 +38,31 @@ button {
     width: 40%;
 }
 
+.cancelbtn:hover,
+.cancelbtn:focus {
+    background-color: rgba(178, 0, 14, 0.75);
+}
+
 /* Float cancel and signup buttons and add an equal width */
 .signupbtn {
     float: left;
     width: 50%;
+}
+
+.signoutbtn {
+    color: white;
+    font-size: 14px;
+    width: auto;
+    float: right;
+    border: none;
+    padding: 14px 20px;
+    background-color: rgba(178, 0, 14, 0.75);
+}
+
+.signoutbtn:hover,
+.signoutbtn:focus {
+    background-color: rgba(178, 36, 50, 0.75);
+    cursor: pointer;
 }
 
 /* Add padding to container elements */

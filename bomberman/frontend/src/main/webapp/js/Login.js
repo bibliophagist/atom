@@ -23,14 +23,19 @@ Login = Class.extend({
                     document.getElementById("signupButton").style.display = "none";
                     gGameEngine.serverProxy.playerName = login;
                     document.getElementById("loginedInfo").innerHTML = "You are now logined with name <b>" + login + "</b>";
+                    document.getElementById("signOut").style.display = "block";
                     document.getElementById("loginedInfo").style.display = "block";
+                    document.getElementById("game").style.display = "block";
                 } else {
-                    document.getElementById("loginModal").style.display = "none";
-                    document.getElementById("loginButton").style.display = "none";
-                    document.getElementById("signupButton").style.display = "none";
-                    document.getElementById("loginedInfo").innerHTML = "wrong pass for login <b>" + login + "</b>";
-                    document.getElementById("loginedInfo").style.display = "block";
+                    document.getElementById("loginError").innerHTML = "<b>Incorrect login or password</b>";
+                    document.getElementById("loginError").style.display = "inline";
+                    document.getElementById("loginPassword").value = "";
                 }
+            },
+            error: function () {
+                document.getElementById("loginError").innerHTML = "<b>Cannot login due to server error, try again late</b>";
+                document.getElementById("loginError").style.display = "inline";
+                document.getElementById("loginPassword").value = "";
             }
         })
 
