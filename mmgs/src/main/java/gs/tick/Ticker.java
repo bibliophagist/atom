@@ -19,18 +19,24 @@ public class Ticker {
 
     public void gameLoop() {
         while (!Thread.currentThread().isInterrupted()) {
-            long started = System.currentTimeMillis();
-            //act(FRAME_TIME);
-            GameController.getGameMechanics().tick(FRAME_TIME);
-            long elapsed = System.currentTimeMillis() - started;
-            if (elapsed < FRAME_TIME) {
-                //log.info("All tick finish at {} ms", elapsed);
-                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(FRAME_TIME - elapsed));
+            if (GameController.getGameMechanics().getGs().isGameSessionIsOver()) {
+                GameController.setGameMechanics(null);
+                Thread.currentThread().interrupt();
+                //GameController.setGameMechanics(null);
             } else {
-                //log.warn("tick lag {} ms", elapsed - FRAME_TIME);
+                long started = System.currentTimeMillis();
+                //act(FRAME_TIME);
+                GameController.getGameMechanics().tick(FRAME_TIME);
+                long elapsed = System.currentTimeMillis() - started;
+                if (elapsed < FRAME_TIME) {
+                    //log.info("All tick finish at {} ms", elapsed);
+                    LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(FRAME_TIME - elapsed));
+                } else {
+                    //log.warn("tick lag {} ms", elapsed - FRAME_TIME);
+                }
+                //log.info("{}: tick ", tickNumber);
+                tickNumber++;
             }
-            //log.info("{}: tick ", tickNumber);
-            tickNumber++;
         }
     }
 

@@ -1,6 +1,11 @@
 package gs;
 
-import gs.model.*;
+import gs.model.Bonus;
+import gs.model.Wall;
+import gs.model.Bomb;
+import gs.model.Fire;
+import gs.model.Pawn;
+import gs.model.Movable;
 import gs.tick.Tickable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +44,14 @@ public class GameSession implements Tickable {
         } else {
             System.out.println("Wrong number of players!");
         }
+    }
+
+    public void decreasePlayersInGame() {
+        playersInGame--;
+    }
+
+    public int getPlayersInGame() {
+        return playersInGame;
     }
 
     public void addSession(WebSocketSession session, String player) {

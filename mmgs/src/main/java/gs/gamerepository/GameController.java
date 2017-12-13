@@ -34,7 +34,8 @@ public class GameController {
         GameController.gameMechanics = gameMechanics;
     }
 
-    //curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8090/game/create -d "playerCount=1234"
+    //curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded"
+    // localhost:8090/game/create -d "playerCount=1234"
     @RequestMapping(
             path = "create",
             method = RequestMethod.POST,
@@ -44,6 +45,7 @@ public class GameController {
         long gameId = gameService.create(playerCount); //FIXME убрать кол-во игроков?
         if (gameMechanics == null) {
             gameMechanics = new GameMechanics(GameRepository.getMap().get(gameId));
+            gameMechanics.setGs(GameRepository.getMap().get(gameId));
         }
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Origin", "*");

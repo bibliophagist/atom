@@ -9,7 +9,7 @@ public class Fire extends Field implements Positionable, Tickable {
     private static final Logger log = LogManager.getLogger(Bomb.class);
     private final int id;
     private Point point;
-    private long currentTime=0;
+    private long currentTime = 0;
     private final long lifeTime = 300;
 
     public Fire(int x, int y) {

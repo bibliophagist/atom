@@ -163,7 +163,7 @@ public class PlayerDao implements Dao<Player> {
 
     public returnValue playerExists(String name) {
         try (Connection con = DbConnector.getConnection();
-            Statement stm = con.createStatement()) {
+             Statement stm = con.createStatement()) {
             ResultSet rs = stm.executeQuery(String.format(CHECK_FOR_PLAYER, name));
             int rscounter = 0;
             while (rs.next())
@@ -179,7 +179,7 @@ public class PlayerDao implements Dao<Player> {
 
     public int getPlayerRank(String name) {
         try (Connection con = DbConnector.getConnection();
-        Statement stm = con.createStatement()) {
+             Statement stm = con.createStatement()) {
             ResultSet rs = stm.executeQuery(String.format(GET_PLAYER_RANK, name));
             rs.next();
             return rs.getInt("rank");
@@ -247,8 +247,8 @@ public class PlayerDao implements Dao<Player> {
     public List<Integer> getAllGameId(String player) {
         try (Connection con = DbConnector.getConnection();
              Statement stm = con.createStatement()) {
-            ResultSet rs= stm.executeQuery("SELECT gameid from serverdata.gamehistory");
-            List<Integer> returnList= new LinkedList<>();
+            ResultSet rs = stm.executeQuery("SELECT gameid from serverdata.gamehistory");
+            List<Integer> returnList = new LinkedList<>();
             while (rs.next()) {
                 returnList.add(rs.getInt(1));
             }

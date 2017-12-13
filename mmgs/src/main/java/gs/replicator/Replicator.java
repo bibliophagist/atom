@@ -12,38 +12,46 @@ public class Replicator {
         for (String name : gs.getAllSessions().keySet()) {
             WebSocketSession session = gs.getAllSessions().get(name);
             String id = session.getId();
-            Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.POSSESS, session.getId());
+            Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.POSSESS,
+                    session.getId());
             if (gs.jsonStringBombs() == null) {
                 if (gs.jsonStringExplosions() == null) {
                     if (gs.jsonStringBonuses() == null) {
-                        Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                                "," + gs.jsonStringPawns());
+                        Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                                gs.jsonStringWalls() +
+                                        "," + gs.jsonStringPawns());
                     } else {
-                        Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                                "," + gs.jsonStringPawns() + "," + gs.jsonStringBonuses());
+                        Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                                gs.jsonStringWalls() + "," + gs.jsonStringPawns() + ","
+                                        + gs.jsonStringBonuses());
                     }
                 } else if (gs.jsonStringBonuses() == null) {
-                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                            "," + gs.jsonStringExplosions() + "," + gs.jsonStringPawns());
+                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                            gs.jsonStringWalls() + "," + gs.jsonStringExplosions() + ","
+                                    + gs.jsonStringPawns());
                 } else {
-                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                            "," + gs.jsonStringExplosions() + "," + gs.jsonStringPawns() + "," + gs.jsonStringBonuses());
+                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                            gs.jsonStringWalls() + "," + gs.jsonStringExplosions() + "," + gs.jsonStringPawns()
+                                    + "," + gs.jsonStringBonuses());
                 }
             } else if (gs.jsonStringExplosions() == null) {
                 if (gs.jsonStringBonuses() == null) {
-                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                            "," + gs.jsonStringBombs() + "," + gs.jsonStringPawns());
+                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                            gs.jsonStringWalls() + "," + gs.jsonStringBombs() + "," + gs.jsonStringPawns());
                 } else {
-                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                            "," + gs.jsonStringBombs() + "," + gs.jsonStringPawns() + "," + gs.jsonStringBonuses());
+                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                            gs.jsonStringWalls() + "," + gs.jsonStringBombs() + "," + gs.jsonStringPawns()
+                                    + "," + gs.jsonStringBonuses());
                 }
             } else {
                 if (gs.jsonStringBonuses() == null) {
-                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                            "," + gs.jsonStringBombs() + "," + gs.jsonStringExplosions() + "," + gs.jsonStringPawns());
+                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                            gs.jsonStringWalls() + "," + gs.jsonStringBombs() + "," + gs.jsonStringExplosions()
+                                    + "," + gs.jsonStringPawns());
                 } else {
-                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA, gs.jsonStringWalls() +
-                            "," + gs.jsonStringBombs() + "," + gs.jsonStringExplosions() + "," + gs.jsonStringPawns() + "," + gs.jsonStringBonuses());
+                    Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.REPLICA,
+                            gs.jsonStringWalls() + "," + gs.jsonStringBombs() + "," + gs.jsonStringExplosions()
+                                    + "," + gs.jsonStringPawns() + "," + gs.jsonStringBonuses());
                 }
             }
         }

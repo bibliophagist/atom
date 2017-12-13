@@ -43,7 +43,10 @@ public class GameHandler extends TextWebSocketHandler implements WebSocketHandle
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-//        GameController.getGameMechanics().clear();
+        GameController.getGameMechanics().getGs().decreasePlayersInGame();
+        if (GameController.getGameMechanics().getGs().getPlayersInGame() == 0) {
+            GameController.getGameMechanics().getGs().kilGameSession();
+        }
         System.out.println("Socket Closed: [" + closeStatus.getCode() + "] " + closeStatus.getReason());
         super.afterConnectionClosed(session, closeStatus);
     }
