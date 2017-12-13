@@ -1,9 +1,6 @@
 package gs;
 
-import gs.model.Bomb;
-import gs.model.Fire;
-import gs.model.Pawn;
-import gs.model.Wall;
+import gs.model.*;
 import gs.tick.Tickable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +17,7 @@ public class GameSession implements Tickable {
     private final ConcurrentHashMap<Point, Wall> allWalls = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Point, Bomb> allBombs = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Point, Fire> allFire = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Point, Bonus> allBonuses = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, WebSocketSession> allSessions = new ConcurrentHashMap<>();
 
     private static AtomicLong idGenerator = new AtomicLong();
@@ -85,6 +83,20 @@ public class GameSession implements Tickable {
         }
     }
 
+    public String jsonStringBonuses() {
+        if (allBonuses.size() == 0) {
+            return null;
+        } else {
+            String objjson = "";
+            for (Point p : allBonuses.keySet()) {
+                Bonus obj = allBonuses.get(p);
+                objjson = objjson + obj.toJson() + ",";
+            }
+            String result = objjson.substring(0, (objjson.length() - 1));
+            return result;
+        }
+    }
+
     public String jsonStringExplosions() {
         if (allFire.size() == 0) {
             return null;
@@ -133,6 +145,10 @@ public class GameSession implements Tickable {
 
     public ConcurrentHashMap<Point, Wall> getAllWalls() {
         return allWalls;
+    }
+
+    public ConcurrentHashMap<Point, Bonus> getAllBonuses() {
+        return allBonuses;
     }
 
     @Override

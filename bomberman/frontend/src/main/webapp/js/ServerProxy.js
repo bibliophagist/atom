@@ -79,6 +79,7 @@ ServerProxy = Class.extend({
                 console.log('alert close');
             }
             console.log('Code: ' + event.code + ' cause: ' + event.reason);
+            window.location.reload(true);
         };
 
         this.socket.onmessage = function (event) {

@@ -11,8 +11,8 @@ import gs.tick.Ticker;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import javax.websocket.CloseReason;
 import java.io.IOException;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GameMechanics implements Tickable, Runnable {
@@ -22,8 +22,9 @@ public class GameMechanics implements Tickable, Runnable {
     private Ticker ticker = new Ticker();
     private final ConcurrentHashMap<String, Boolean> bombHasBeenPlanted = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> moveHasBeenMade = new ConcurrentHashMap<>();
+    private int currentNumberOfBonuses = 0;
 
-    private GameSession gs = new GameSession();//FIXME исправить после изменения matchmaker'a
+    private GameSession gs = new GameSession();
 
     public GameSession getGs() {
         return gs;
@@ -43,8 +44,7 @@ public class GameMechanics implements Tickable, Runnable {
         ticker.gameLoop();
     }
 
-    //Чистим очередь выполняя первые указы
-    public void clear() {
+    private void clear() {
         for (String name : gs.getAllPawns().keySet()) {
             bombHasBeenPlanted.put(name, false);
             moveHasBeenMade.put(name, false);
@@ -63,7 +63,7 @@ public class GameMechanics implements Tickable, Runnable {
         moveHasBeenMade.clear();
     }
 
-    public void handleMove(Message msg, Pawn pawn) {
+    private void handleMove(Message msg, Pawn pawn) {
         if (msg.getData().equals("{\"direction\":\"RIGHT\"}")) {
             Point right = pawn.move(Movable.Direction.RIGHT, 1);
             if (gs.getAllWalls().get(pixelToTile(right)).getType() != Wall.Type.Grass) {
@@ -89,7 +89,7 @@ public class GameMechanics implements Tickable, Runnable {
         }
     }
 
-    public void handleBomb(Pawn pawn) {
+    private void handleBomb(Pawn pawn) {
         Bomb bomb = new Bomb(pawn.getPoint().getX(), pawn.getPoint().getY(), 300);
         if (pawn.isPowerful()) {
             bomb.setPower(2);
@@ -97,7 +97,7 @@ public class GameMechanics implements Tickable, Runnable {
         gs.getAllBombs().put(new Point(pixelToTile(pawn.getPoint()).getX(), pixelToTile(pawn.getPoint()).getY()), bomb);//TODO ставить красиво (сейчас не в центре ячейки)
     }
 
-    public void writeReplica(GameSession gs) {
+    private void writeReplica(GameSession gs) {
         replicator.writeReplica(gs);
     }
 
@@ -160,16 +160,15 @@ public class GameMechanics implements Tickable, Runnable {
                 gs.getAllBombs().remove(p);
             }
         }
-        for (String name : gs.getAllPawns().keySet()) {//FIXME dying animation
+        for (String name : gs.getAllPawns().keySet()) {//FIXME dying animation?
             if (gs.getAllFire().containsKey(pixelToTile(gs.getAllPawns().get(name).getPoint()))) {
-                gs.getAllPawns().get(name).setPoint(-100,-100);
-                gs.getAllSessions().remove(name);
-//                try {
-//                    gs.getAllSessions().get(name).close();
-//                    gs.getAllSessions().remove(name);
-//                } catch (IOException e) {
-//                    log.info("Pawn died, but session can't be closed!");
-//                }
+                gs.getAllPawns().get(name).setPoint(-100, -100);
+                try {
+                    gs.getAllSessions().get(name).close();
+                    gs.getAllSessions().remove(name);
+                } catch (IOException e) {
+                    log.info("Pawn died, but session can't be closed!");
+                }
             }
         }
         for (Point p : gs.getAllFire().keySet()) {
@@ -179,12 +178,22 @@ public class GameMechanics implements Tickable, Runnable {
                 gs.getAllFire().remove(p);
             }
         }
+        for (Point p : gs.getAllBonuses().keySet()) {
+            gs.getAllBonuses().get(p).tick(elapsed);
+        }
+        for (String name : gs.getAllPawns().keySet()) {
+            if (gs.getAllBonuses().containsKey(pixelToTile(gs.getAllPawns().get(name).getPoint()))) {
+                //TODO применить бонус
+                gs.getAllBonuses().remove(pixelToTile(gs.getAllPawns().get(name).getPoint()));
+            }
+        }
+        if (currentNumberOfBonuses <= 2) {
+            bonusCreator();
+        }
         writeReplica(gs);
     }
 
-    public void initCanvas() {
-//        gs.getAllBombs().put(pixelToTile(new Point(64, 32)), new Bomb(64, 32, 300));
-//        gs.getAllBombs().get(pixelToTile(new Point(64, 32))).setPower(2);
+    private void initCanvas() {
         for (int i = 0; i < 13; ++i) {
             for (int k = 0; k < 17; ++k) {
                 if (i == 0 || i == 12) {
@@ -224,9 +233,65 @@ public class GameMechanics implements Tickable, Runnable {
                 }
             }
         }
-//        for (Point p : gs.getAllWalls().keySet()){
-//            System.out.println(gs.getAllWalls().get(p).getId());
-//        }
+
+        /*for (int i = 0; i < 13; ++i) {
+            for (int k = 0; k < 17; ++k) {
+                if (i == 0 || i == 12) {
+                    gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                } else if (i == 1 || i == 11) {
+                    if (k == 0 || k == 16) {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    } else if (k == 1 || k == 2 || k == 14 || k == 15) {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    } else {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    }
+                } else if (i == 2 || i == 10) {
+                    if (k == 0 || k == 16) {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    } else if (k == 1 || k == 15) {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    } else {
+                        if (k % 2 == 0) {
+                            gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                        } else {
+                            gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                        }
+                    }
+                } else if (i % 2 != 0) {
+                    if (k == 0 || k == 16) {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    } else {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    }
+                } else {
+                    if (k % 2 == 0) {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    } else {
+                        gs.getAllWalls().put(new Point(k, i), new Wall(k, i, Wall.Type.Grass));
+                    }
+                }
+            }
+        }*/
+    }
+
+    private void bonusCreator() {
+        Random rnd = new Random(System.currentTimeMillis());
+        int randomX = 1 + rnd.nextInt(16);
+        int randomY = 1 + rnd.nextInt(12);
+        int randomBonusType = rnd.nextInt(2);
+        Point position = new Point(randomX, randomY);
+        if (gs.getAllWalls().get(position).getType() == Wall.Type.Grass) {
+            switch (randomBonusType) {
+                case 0:
+                    gs.getAllBonuses().put(position, new Bonus(position.getX(), position.getY(), Bonus.Type.speed));
+                case 1:
+                    gs.getAllBonuses().put(position, new Bonus(position.getX(), position.getY(), Bonus.Type.bomb));
+                case 2:
+                    gs.getAllBonuses().put(position, new Bonus(position.getX(), position.getY(), Bonus.Type.fire));
+            }
+        }
+        currentNumberOfBonuses++;
     }
 
     public Point tileToPixel(Point pos) {
