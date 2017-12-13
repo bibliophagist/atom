@@ -1,7 +1,7 @@
 package mm.dao;
 
-/**
- * Created by sergey on 3/25/17.
+/*
+  Created by sergey on 3/25/17.
  */
 
 import org.apache.logging.log4j.LogManager;

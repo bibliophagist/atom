@@ -13,9 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static mm.dao.returnValue.TRUE;
 
@@ -27,9 +25,9 @@ public class ConnectionController {
 
     @Autowired
     static Matchmaker matchMaker = new Matchmaker();
-    private static PlayerDao playerDao = new PlayerDao();
+    private static final PlayerDao playerDao = new PlayerDao();
 
-    private static HttpHeaders headers = new HttpHeaders();
+    private static final HttpHeaders headers = new HttpHeaders();
 
     static {
         Thread matchMakerThread = new Thread(matchMaker);

@@ -15,8 +15,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class GameServiceRequest {
     private static final Logger log = LogManager.getLogger(GameServiceRequest.class);
 
-    private RestTemplate rest;
-    private HttpHeaders headers;
+    private final RestTemplate rest;
+    private final HttpHeaders headers;
     private HttpStatus status;
 
     public GameServiceRequest() {

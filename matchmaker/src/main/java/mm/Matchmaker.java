@@ -20,11 +20,11 @@ public class Matchmaker implements Runnable {
     private static final int PLAYER_COUNT = 4;
     private static final int TIMEOUT = 4;
     private long gameId = 100;
-    PlayerDao playerDao = new PlayerDao();
-    private BlockingQueue<Player> bronzeQueue = new LinkedBlockingQueue<>();
-    private BlockingQueue<Player> silverQueue = new LinkedBlockingQueue<>();
-    private BlockingQueue<Player> goldQueue = new LinkedBlockingQueue<>();
-    Hashtable<String, Long> inGamePlayers = new Hashtable<>();
+    private final PlayerDao playerDao = new PlayerDao();
+    private final BlockingQueue<Player> bronzeQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Player> silverQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Player> goldQueue = new LinkedBlockingQueue<>();
+    final Hashtable<String, Long> inGamePlayers = new Hashtable<>();
 
     public boolean join(@NotNull String name) {
         int rank = playerDao.getPlayerRank(name);

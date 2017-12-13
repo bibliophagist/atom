@@ -43,7 +43,7 @@ public class PlayerDao implements Dao<Player> {
     private static final String DELETE_USER =
             "delete * " +
                     "from game.player " +
-                    "where ";
+                    "where name='%s'";
 
     @Language("sql")
     private static final String RESET_SCHEMA = "drop schema if exists game cascade;\n" +
@@ -154,8 +154,8 @@ public class PlayerDao implements Dao<Player> {
         try (Connection con = DbConnector.getConnection();
              Statement stm = con.createStatement()
         ) {
-            stm.execute(String.format(RESET_SCHEMA));
-            stm.execute(String.format(RESET_TABLE));
+            stm.execute(RESET_SCHEMA);
+            stm.execute(RESET_TABLE);
         } catch (SQLException e) {
             log.error("Failed to reset DB", e);
         }
