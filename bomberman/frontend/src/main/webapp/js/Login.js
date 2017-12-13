@@ -19,12 +19,14 @@ Login = Class.extend({
             success: function (data) {
                 if (data === "+") {
                     document.getElementById("loginModal").style.display = "none";
+                    document.getElementById('body').style.overflow='auto';
                     document.getElementById("loginButton").style.display = "none";
                     document.getElementById("signupButton").style.display = "none";
                     gGameEngine.serverProxy.playerName = login;
                     document.getElementById("loginedInfo").innerHTML = "Login: <b>" + login + "</b>";
                     document.getElementById("signOut").style.display = "block";
                     document.getElementById("loginedInfo").style.display = "inline";
+                    document.getElementById("historyButton").style.display = "block";
                     document.getElementById("game").style.display = "block";
                 } else {
                     document.getElementById("loginError").innerHTML = "<b>Incorrect login or password</b>";

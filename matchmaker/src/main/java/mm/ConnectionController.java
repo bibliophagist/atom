@@ -1,7 +1,7 @@
 package mm;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import mm.dao.PlayerDao;
-import mm.dao.returnValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static mm.dao.returnValue.TRUE;
-import static mm.dao.returnValue.FALSE;
-import static mm.dao.returnValue.ERROR;
 
 @Controller
 @CrossOrigin
@@ -129,25 +132,28 @@ public class ConnectionController {
         }
     }
 
-    //TODO: move list outside of matchmaker
-
     /**
      * curl test
      * <p>
-     * curl -i localhost:8080/matchmaker/list'
+     * curl -i localhost:8080/matchmaker/
      */
     @RequestMapping(
-            path = "list",
-            method = RequestMethod.GET,
-            produces = MediaType.TEXT_HTML_VALUE)
+            path = "history",
+            method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> list() {
+    public ResponseEntity<String> list(@RequestParam("login") String login) {
         log.info("Games list request");
-        String openingTag = "<html><body><table>";
-        String tableHead = "<tr> <th>%s</th>><tr> ";
-        String tableRow = "<tr> <td> %s </td> <td> %s </td> <td>%s</td> </tr>";
-        String closingTag = "</table></body></html>";
-        return new ResponseEntity<>(tableHead, HttpStatus.OK);
+        ArrayList<Map<String, Integer>> gameHistory = playerDao.getPlayerHistory(login);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonGameHistory = null;
+        try {
+            jsonGameHistory = mapper.writeValueAsString(gameHistory);
+        } catch (Exception ignored) {}
+        if (jsonGameHistory != null)
+            System.out.println(jsonGameHistory);
+        return new ResponseEntity<>(jsonGameHistory, headers, HttpStatus.OK);
     }
 
 }

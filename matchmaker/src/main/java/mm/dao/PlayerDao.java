@@ -8,9 +8,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static mm.dao.returnValue.TRUE;
 import static mm.dao.returnValue.FALSE;
@@ -212,6 +211,51 @@ public class PlayerDao implements Dao<Player> {
         } catch (SQLException e) {
             log.error("Failed to register player " + login + "\ndue to exception: " + e);
             return ERROR;
+        }
+    }
+
+    public ArrayList<Map<String, Integer>> getPlayerHistory(String login) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()) {
+
+            ResultSet rs = stm.executeQuery(String.format("select players,result from serverdata.gamehistory where '%s' = any (players);", login));
+            ArrayList<Map<String, Integer>> resultArray = new ArrayList<>();
+            while (rs.next()) {
+                String players = rs.getString(1);
+                players = players.substring(1, players.length() - 1);
+                ArrayList<String> playersArray = new ArrayList<>(Arrays.asList(players.split(",")));
+
+                String results = rs.getString(2);
+                results = results.substring(1, results.length() - 1);
+                ArrayList<String> resultsArray = new ArrayList<>(Arrays.asList(results.split(",")));
+
+                Map<String, Integer> game = new ConcurrentHashMap<>();
+                if (resultsArray.size() == playersArray.size()) {
+                    for (int i = 0; i < playersArray.size(); i++)
+                        game.put(playersArray.get(i), Integer.parseInt(resultsArray.get(i)));
+                }
+                resultArray.add(game);
+            }
+            return resultArray;
+
+        } catch (SQLException e) {
+            log.error("Failed to return game history for player " + login + "\ndue to exception: " + e);
+            return null;
+        }
+    }
+
+    public List<Integer> getAllGameId(String player) {
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()) {
+            ResultSet rs= stm.executeQuery("SELECT gameid from serverdata.gamehistory");
+            List<Integer> returnList= new LinkedList<>();
+            while (rs.next()) {
+                returnList.add(rs.getInt(1));
+            }
+            return returnList;
+        } catch (SQLException e) {
+            log.error("Failed to get all game id \ndue to exception: " + e);
+            return null;
         }
     }
 
