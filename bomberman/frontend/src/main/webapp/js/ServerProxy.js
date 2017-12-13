@@ -12,11 +12,19 @@ ServerProxy = Class.extend({
     handler: {},
 
     init: function () {
+        if (this.socket === null)
+            console.log("socket is null");
+        else
+            console.log("socket is not null");
         this.handler['REPLICA'] = gMessages.handleReplica;
         this.handler['POSSESS'] = gMessages.handlePossess;
 
         var self = this;
         gInputEngine.subscribe('up', function () {
+            if (this.socket === null)
+                console.log("socket is null");
+            else
+                console.log("socket is not null");
             self.socket.send(gMessages.move('up'))
         });
         gInputEngine.subscribe('down', function () {

@@ -41,6 +41,14 @@ public class GameSession implements Tickable {
         }
     }
 
+    public int getPlayersInGame() {
+        return playersInGame;
+    }
+
+    public void decreasePlayersInGame() {
+        playersInGame--;
+    }
+
     public void addSession(WebSocketSession session, String player) {
         allSessions.put(player, session);
     }

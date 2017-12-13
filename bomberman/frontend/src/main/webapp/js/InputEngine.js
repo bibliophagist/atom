@@ -50,6 +50,7 @@ InputEngine = Class.extend({
         var action = gInputEngine.bindings[event.keyCode];
         if (action) {
             gInputEngine.actions[action] = false;
+            console.log("button pressed");
             event.preventDefault();
         }
         return false;
@@ -65,7 +66,7 @@ InputEngine = Class.extend({
                     subscribers[i]()
                 }
             }
-
+            console.log("button pressed");
             event.preventDefault();
         }
         return false;

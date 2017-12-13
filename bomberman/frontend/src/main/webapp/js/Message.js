@@ -88,7 +88,7 @@ Messages = Class.extend({
             return el.id === obj.id;
         });
 
-        var position = Utils.getEntityPosition(Utils.convertToBitmapPosition(obj.position));
+        var position = Utils.getEntityPosition(obj.position);
         if (bonus) {
             bonus.type = obj.type;
         } else {

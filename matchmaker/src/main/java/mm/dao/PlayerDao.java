@@ -8,12 +8,17 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static mm.dao.returnValue.TRUE;
-import static mm.dao.returnValue.FALSE;
-import static mm.dao.returnValue.ERROR;
+import static mm.dao.ReturnValue.TRUE;
+import static mm.dao.ReturnValue.FALSE;
+import static mm.dao.ReturnValue.ERROR;
 
 public class PlayerDao implements Dao<Player> {
     private static final Logger log = LogManager.getLogger(PlayerDao.class);
@@ -161,9 +166,10 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
-    public returnValue playerExists(String name) {
+    public ReturnValue playerExists(String name) {
         try (Connection con = DbConnector.getConnection();
-            Statement stm = con.createStatement()) {
+            Statement stm = con.createStatement()
+        ) {
             ResultSet rs = stm.executeQuery(String.format(CHECK_FOR_PLAYER, name));
             int rscounter = 0;
             while (rs.next())
@@ -179,7 +185,8 @@ public class PlayerDao implements Dao<Player> {
 
     public int getPlayerRank(String name) {
         try (Connection con = DbConnector.getConnection();
-        Statement stm = con.createStatement()) {
+            Statement stm = con.createStatement()
+        ) {
             ResultSet rs = stm.executeQuery(String.format(GET_PLAYER_RANK, name));
             rs.next();
             return rs.getInt("rank");
@@ -189,9 +196,10 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
-    public returnValue login(String login, String password) {
+    public ReturnValue login(String login, String password) {
         try (Connection con = DbConnector.getConnection();
-             Statement stm = con.createStatement()) {
+             Statement stm = con.createStatement()
+        ) {
             ResultSet rs = stm.executeQuery(String.format(LOGIN, login, password));
             if (rs.next())
                 return TRUE;
@@ -203,9 +211,10 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
-    public returnValue register(String login, String password) {
+    public ReturnValue register(String login, String password) {
         try (Connection con = DbConnector.getConnection();
-             Statement stm = con.createStatement()) {
+             Statement stm = con.createStatement()
+        ) {
             stm.execute(String.format(REGISTER, login, password));
             return TRUE;
         } catch (SQLException e) {
@@ -216,9 +225,11 @@ public class PlayerDao implements Dao<Player> {
 
     public ArrayList<Map<String, Integer>> getPlayerHistory(String login) {
         try (Connection con = DbConnector.getConnection();
-             Statement stm = con.createStatement()) {
+             Statement stm = con.createStatement()
+        ) {
 
-            ResultSet rs = stm.executeQuery(String.format("select players,result from serverdata.gamehistory where '%s' = any (players);", login));
+            ResultSet rs = stm.executeQuery(String.format("select players,result from serverdata.gamehistory " +
+                    "where '%s' = any (players);", login));
             ArrayList<Map<String, Integer>> resultArray = new ArrayList<>();
             while (rs.next()) {
                 String players = rs.getString(1);
@@ -246,9 +257,10 @@ public class PlayerDao implements Dao<Player> {
 
     public List<Integer> getAllGameId(String player) {
         try (Connection con = DbConnector.getConnection();
-             Statement stm = con.createStatement()) {
-            ResultSet rs= stm.executeQuery("SELECT gameid from serverdata.gamehistory");
-            List<Integer> returnList= new LinkedList<>();
+             Statement stm = con.createStatement()
+        ) {
+            ResultSet rs = stm.executeQuery("SELECT gameid from serverdata.gamehistory");
+            List<Integer> returnList = new LinkedList<>();
             while (rs.next()) {
                 returnList.add(rs.getInt(1));
             }

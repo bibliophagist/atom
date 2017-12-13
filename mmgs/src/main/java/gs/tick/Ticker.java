@@ -13,12 +13,14 @@ import java.util.concurrent.locks.LockSupport;
 public class Ticker {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Ticker.class);
     private static final int FPS = 60;
-    private static final long FRAME_TIME = 1000 / FPS;
+    volatile boolean interrupted = false;
+    public static final long FRAME_TIME = 1000 / FPS;
     private Set<Tickable> tickables = new ConcurrentSkipListSet<>();
     private long tickNumber = 0;
 
     public void gameLoop() {
-        while (!Thread.currentThread().isInterrupted()) {
+        log.info("gameLoop entered");
+        while (interrupted) {
             long started = System.currentTimeMillis();
             //act(FRAME_TIME);
             GameController.getGameMechanics().tick(FRAME_TIME);
@@ -32,6 +34,13 @@ public class Ticker {
             //log.info("{}: tick ", tickNumber);
             tickNumber++;
         }
+        Thread.currentThread().interrupt();
+        log.error("gameLoop interrupted");
+        log.info("gameLoop exited");
+    }
+
+    public void setInterrupted(boolean interrupted) {
+        this.interrupted = interrupted;
     }
 
     public void registerTickable(Tickable tickable) {

@@ -17,17 +17,14 @@ class DbConnector {
 
     private static final String URL_TEMPLATE = "jdbc:postgresql://%s:%d/%s";
     private static final String URL;
+    //-------------------------------------------------------
+    //aws
+    //-------------------------------------------------------
     private static final String HOST = "34.229.108.81";
     private static final int PORT = 5432;
     private static final String DB_NAME = "atom24";
     private static final String USER = "atom24";
     private static final String PASSWORD = "hq*mv4oXb8e8";
-//    private static final String HOST = "localhost";
-//    private static final int PORT = 5433;
-//    private static final String DB_NAME = "home";
-//    private static final String USER = "home";
-//    private static final String PASSWORD = "";
-
 
     static {
         try {
@@ -36,10 +33,20 @@ class DbConnector {
             log.error("Failed to load jdbc driver.", e);
             System.exit(-1);
         }
-
         URL = String.format(URL_TEMPLATE, HOST, PORT, DB_NAME);
         log.info("Success. DbConnector init.");
     }
+
+    //-------------------------------------------------------
+    //localhost
+    //-------------------------------------------------------
+    //private static final String HOST = "localhost";
+    //private static final int PORT = 5433;
+    //private static final String DB_NAME = "home";
+    //private static final String USER = "home";
+    //private static final String PASSWORD = "";
+
+
 
     static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
