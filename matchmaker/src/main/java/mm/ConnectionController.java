@@ -26,12 +26,10 @@ import static mm.dao.ReturnValue.TRUE;
 @RequestMapping("matchmaker")
 public class ConnectionController {
     private static final Logger log = LogManager.getLogger(ConnectionController.class);
-
+    private static final PlayerDao playerDao = new PlayerDao();
+    private static final HttpHeaders headers = new HttpHeaders();
     @Autowired
     static Matchmaker matchMaker = new Matchmaker();
-    private static final PlayerDao playerDao = new PlayerDao();
-
-    private static final HttpHeaders headers = new HttpHeaders();
 
     static {
         Thread matchMakerThread = new Thread(matchMaker);
@@ -85,7 +83,7 @@ public class ConnectionController {
      * <p>
      * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded"
      * localhost:8080/matchmaker/login -d "login=test&password=qwer"
-     *</p>
+     * </p>
      */
 
     @RequestMapping(
@@ -119,7 +117,7 @@ public class ConnectionController {
      * <p>
      * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded"
      * localhost:8080/matchmaker/register -d "login=test&password=qwer"
-     *</p>
+     * </p>
      */
 
     @RequestMapping(
@@ -151,7 +149,7 @@ public class ConnectionController {
             method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> list(@RequestParam("login") String login) {
+    public ResponseEntity<String> history(@RequestParam("login") String login) {
         log.info("Games list request");
         ArrayList<Map<String, Integer>> gameHistory = playerDao.getPlayerHistory(login);
 
@@ -167,4 +165,22 @@ public class ConnectionController {
         return new ResponseEntity<>(jsonGameHistory, headers, HttpStatus.OK);
     }
 
+    @RequestMapping(
+            path = "gameover",
+            method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> gameover(@RequestParam("gameid") long gameId) {
+        for (GameSessionInfo gameSession :
+                matchMaker.runningGames) {
+            if (gameSession.getGameId() == gameId) {
+                for (String player :
+                        gameSession.players) {
+                    matchMaker.inGamePlayers.remove(player);
+                }
+                matchMaker.runningGames.remove(gameSession);
+                return new ResponseEntity<String>("+", headers, HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<String>("-", headers, HttpStatus.OK);
+    }
 }

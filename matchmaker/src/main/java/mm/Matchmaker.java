@@ -8,13 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 @Service
 public class Matchmaker implements Runnable {
@@ -24,12 +19,13 @@ public class Matchmaker implements Runnable {
     GameServiceRequest client = new GameServiceRequest();
     private static final int PLAYER_COUNT = 4;
     private static final int TIMEOUT = 4;
-    private long gameId = 100;
     private final PlayerDao playerDao = new PlayerDao();
     private final BlockingQueue<Player> bronzeQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<Player> silverQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<Player> goldQueue = new LinkedBlockingQueue<>();
-    final Hashtable<String, Long> inGamePlayers = new Hashtable<>();
+    final Map<String, Long> inGamePlayers = new ConcurrentHashMap<>();
+    final ArrayList<GameSessionInfo> runningGames = new ArrayList<>();
+
 
     public boolean join(@NotNull String name) {
         int rank = playerDao.getPlayerRank(name);
@@ -60,13 +56,14 @@ public class Matchmaker implements Runnable {
     }
 
     private void gameConstructor(BlockingQueue<Player> queue, String queueName) {
-        List<Player> players = new ArrayList<>(PLAYER_COUNT);
+        ArrayList<Player> players = new ArrayList<>(PLAYER_COUNT);
+        long gameId = 0L;
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Player newPlayer = queue.poll(TIMEOUT, TimeUnit.SECONDS);
                 if (newPlayer == null) {
                     if (players.size() > 1 && players.size() < PLAYER_COUNT) {
-                        addToDataBase(players);
+                        addToDataBase(players, gameId);
                         log.info("timeout, game started with " +
                                 players.size() +
                                 " players in " +
@@ -75,10 +72,10 @@ public class Matchmaker implements Runnable {
                         client.start(gameId);
                         //TODO: client.start starts a 10 second timer before starting the game
                         players.clear();
-                    } else
-                        log.info("not enough players to start the game");
-                } else if (!inGamePlayers.containsKey(newPlayer.getLogin())) {
+                    }
+                } else if (inGamePlayers.containsKey(newPlayer.getLogin())) {
                     players.add(newPlayer);
+                    log.info("gameConstructor has " + players.size() + " players");
                     if (players.size() == 1) {
                         gameId = Long.parseLong(client.create(PLAYER_COUNT));
                         //gameId++; //FIXME: should be removed when gs works
@@ -92,7 +89,7 @@ public class Matchmaker implements Runnable {
             }
 
             if (players.size() == PLAYER_COUNT) {
-                addToDataBase(players);
+                addToDataBase(players, gameId);
                 log.info("game started with maximum players in " +
                         queueName +
                         ", pushed to DB");
@@ -102,11 +99,15 @@ public class Matchmaker implements Runnable {
         }
     }
 
-    private void addToDataBase(Collection<Player> players) {
+    private void addToDataBase(ArrayList<Player> players, long gameId) {
+        GameSessionInfo gameSession = new GameSessionInfo();
+        gameSession.setGameId(gameId);
         for (Player player :
                 players) {
             player.setGameId(gameId);
             playerDao.insert(player);
+            gameSession.players.add(player.getLogin());
         }
     }
+
 }
