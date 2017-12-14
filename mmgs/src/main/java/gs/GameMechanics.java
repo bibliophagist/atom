@@ -4,7 +4,12 @@ import gs.geometry.Point;
 import gs.inputqueue.InputQueue;
 import gs.message.Message;
 import gs.message.Topic;
-import gs.model.*;
+import gs.model.Bonus;
+import gs.model.Wall;
+import gs.model.Bomb;
+import gs.model.Fire;
+import gs.model.Pawn;
+import gs.model.Movable;
 import gs.replicator.Replicator;
 import gs.tick.Tickable;
 import gs.tick.Ticker;
@@ -24,10 +29,14 @@ public class GameMechanics implements Tickable, Runnable {
     private final ConcurrentHashMap<String, Boolean> moveHasBeenMade = new ConcurrentHashMap<>();
     private int currentNumberOfBonuses = 0;
 
-    private GameSession gs = new GameSession();
+    private GameSession gs;
 
     public GameSession getGs() {
         return gs;
+    }
+
+    public void setGs(GameSession gs) {
+        this.gs = gs;
     }
 
     public Ticker getTicker() {
@@ -94,7 +103,8 @@ public class GameMechanics implements Tickable, Runnable {
         if (pawn.isPowerful()) {
             bomb.setPower(2);
         }
-        gs.getAllBombs().put(new Point(pixelToTile(pawn.getPoint()).getX(), pixelToTile(pawn.getPoint()).getY()), bomb);//TODO ставить красиво (сейчас не в центре ячейки)
+        gs.getAllBombs().put(new Point(pixelToTile(pawn.getPoint()).getX(), pixelToTile(pawn.getPoint()).getY()), bomb);
+        //TODO ставить красиво (сейчас не в центре ячейки)
     }
 
     private void writeReplica(GameSession gs) {
@@ -114,55 +124,75 @@ public class GameMechanics implements Tickable, Runnable {
                 Wall bottomWall = gs.getAllWalls().get(new Point(p.getX(), p.getY() - 1));
                 if (rightWall.getType() == Wall.Type.Wood || rightWall.getType() == Wall.Type.Grass) {
                     rightWall.setType(Wall.Type.Grass);
-                    gs.getAllFire().put(rightWall.getPosition(), new Fire(tileToPixel(rightWall.getPosition()).getX(), tileToPixel(rightWall.getPosition()).getY()));
+                    gs.getAllFire().put(rightWall.getPosition(), new Fire(tileToPixel(rightWall.getPosition()).getX(),
+                            tileToPixel(rightWall.getPosition()).getY()));
                     if (bomb.getPower() == 2) {
-                        Wall secondRightWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX() + 1, rightWall.getPosition().getY()));
+                        Wall secondRightWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX() + 1,
+                                rightWall.getPosition().getY()));
                         if (secondRightWall.getType() == Wall.Type.Wood) {
                             secondRightWall.setType(Wall.Type.Grass);
-                            gs.getAllFire().put(secondRightWall.getPosition(), new Fire(tileToPixel(secondRightWall.getPosition()).getX(), tileToPixel(secondRightWall.getPosition()).getY()));
+                            gs.getAllFire().put(secondRightWall.getPosition(),
+                                    new Fire(tileToPixel(secondRightWall.getPosition()).getX(),
+                                            tileToPixel(secondRightWall.getPosition()).getY()));
                         }
                     }
                 }
                 if (leftWall.getType() == Wall.Type.Wood || leftWall.getType() == Wall.Type.Grass) {
                     leftWall.setType(Wall.Type.Grass);
-                    gs.getAllFire().put(tileToPixel(leftWall.getPosition()), new Fire(tileToPixel(leftWall.getPosition()).getX(), tileToPixel(leftWall.getPosition()).getY()));
+                    gs.getAllFire().put(tileToPixel(leftWall.getPosition()),
+                            new Fire(tileToPixel(leftWall.getPosition()).getX(),
+                                    tileToPixel(leftWall.getPosition()).getY()));
                     if (bomb.getPower() == 2) {
-                        Wall secondLeftWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX() - 1, rightWall.getPosition().getY()));
+                        Wall secondLeftWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX() - 1,
+                                rightWall.getPosition().getY()));
                         if (secondLeftWall.getType() == Wall.Type.Wood) {
                             secondLeftWall.setType(Wall.Type.Grass);
-                            gs.getAllFire().put(secondLeftWall.getPosition(), new Fire(tileToPixel(secondLeftWall.getPosition()).getX(), tileToPixel(secondLeftWall.getPosition()).getY()));
+                            gs.getAllFire().put(secondLeftWall.getPosition(),
+                                    new Fire(tileToPixel(secondLeftWall.getPosition()).getX(),
+                                            tileToPixel(secondLeftWall.getPosition()).getY()));
                         }
                     }
                 }
                 if (topWall.getType() == Wall.Type.Wood || topWall.getType() == Wall.Type.Grass) {
                     topWall.setType(Wall.Type.Grass);
-                    gs.getAllFire().put(topWall.getPosition(), new Fire(tileToPixel(topWall.getPosition()).getX(), tileToPixel(topWall.getPosition()).getY()));
+                    gs.getAllFire().put(topWall.getPosition(), new Fire(tileToPixel(topWall.getPosition()).getX(),
+                            tileToPixel(topWall.getPosition()).getY()));
                     if (bomb.getPower() == 2) {
-                        Wall secondTopWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX(), rightWall.getPosition().getY() + 1));
+                        Wall secondTopWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX(),
+                                rightWall.getPosition().getY() + 1));
                         if (secondTopWall.getType() == Wall.Type.Wood) {
                             secondTopWall.setType(Wall.Type.Grass);
-                            gs.getAllFire().put(secondTopWall.getPosition(), new Fire(tileToPixel(secondTopWall.getPosition()).getX(), tileToPixel(secondTopWall.getPosition()).getY()));
+                            gs.getAllFire().put(secondTopWall.getPosition(),
+                                    new Fire(tileToPixel(secondTopWall.getPosition()).getX(),
+                                            tileToPixel(secondTopWall.getPosition()).getY()));
                         }
                     }
                 }
                 if (bottomWall.getType() == Wall.Type.Wood || bottomWall.getType() == Wall.Type.Grass) {
                     bottomWall.setType(Wall.Type.Grass);
-                    gs.getAllFire().put(bottomWall.getPosition(), new Fire(tileToPixel(bottomWall.getPosition()).getX(), tileToPixel(bottomWall.getPosition()).getY()));
+                    gs.getAllFire().put(bottomWall.getPosition(), new Fire(tileToPixel(bottomWall.getPosition()).getX(),
+                            tileToPixel(bottomWall.getPosition()).getY()));
                     if (bomb.getPower() == 2) {
-                        Wall secondBottomWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX(), rightWall.getPosition().getY() - 1));
+                        Wall secondBottomWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX(),
+                                rightWall.getPosition().getY() - 1));
                         if (secondBottomWall.getType() == Wall.Type.Wood) {
                             secondBottomWall.setType(Wall.Type.Grass);
-                            gs.getAllFire().put(secondBottomWall.getPosition(), new Fire(tileToPixel(secondBottomWall.getPosition()).getX(), tileToPixel(secondBottomWall.getPosition()).getY()));
+                            gs.getAllFire().put(secondBottomWall.getPosition(),
+                                    new Fire(tileToPixel(secondBottomWall.getPosition()).getX(),
+                                            tileToPixel(secondBottomWall.getPosition()).getY()));
                         }
                     }
                 }
-                gs.getAllFire().put(pixelToTile(bomb.getPosition()), new Fire(bomb.getPosition().getX(), bomb.getPosition().getY()));
+                gs.getAllFire().put(pixelToTile(bomb.getPosition()), new Fire(bomb.getPosition().getX(),
+                        bomb.getPosition().getY()));
                 gs.getAllBombs().remove(p);
             }
         }
-        for (String name : gs.getAllPawns().keySet()) {//FIXME dying animation?
+        for (String name : gs.getAllPawns().keySet()) {
+            //FIXME dying animation?
             if (gs.getAllFire().containsKey(pixelToTile(gs.getAllPawns().get(name).getPoint()))) {
-                gs.getAllPawns().get(name).setPoint(-100, -100);
+                //gs.getAllPawns().get(name).setPoint(-100, -100);
+                gs.getAllPawns().remove(name);
                 try {
                     gs.getAllSessions().get(name).close();
                     gs.getAllSessions().remove(name);
@@ -277,18 +307,23 @@ public class GameMechanics implements Tickable, Runnable {
 
     private void bonusCreator() {
         Random rnd = new Random(System.currentTimeMillis());
-        int randomX = 1 + rnd.nextInt(16);
-        int randomY = 1 + rnd.nextInt(12);
+        int randomX = 2;
+        int randomY = 1;
         int randomBonusType = rnd.nextInt(2);
         Point position = new Point(randomX, randomY);
-        if (gs.getAllWalls().get(position).getType() == Wall.Type.Grass) {
+        if (gs.getAllWalls().get(position).getType() == Wall.Type.Grass && !gs.getAllBonuses().containsKey(position)) {
             switch (randomBonusType) {
                 case 0:
                     gs.getAllBonuses().put(position, new Bonus(position.getX(), position.getY(), Bonus.Type.speed));
+                    break;
                 case 1:
                     gs.getAllBonuses().put(position, new Bonus(position.getX(), position.getY(), Bonus.Type.bomb));
+                    break;
                 case 2:
                     gs.getAllBonuses().put(position, new Bonus(position.getX(), position.getY(), Bonus.Type.fire));
+                    break;
+                default:
+                    break;
             }
         }
         currentNumberOfBonuses++;

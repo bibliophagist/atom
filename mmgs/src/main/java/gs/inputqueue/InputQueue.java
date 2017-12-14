@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class InputQueue {
     private static ConcurrentLinkedQueue<Message> queue = new ConcurrentLinkedQueue<Message>();
 
-    public void addToQueue( Message message) {
+    public void addToQueue(Message message) {
         queue.offer(message);
     }
 
