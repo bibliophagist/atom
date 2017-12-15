@@ -13,39 +13,33 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Component
 public class GameHandler extends TextWebSocketHandler implements WebSocketHandler {
-
+    private String str = "{";
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
-        System.out.println("Socket Connected: " + session);
         String str = session.getUri().toString();
         String name = str.substring(str.indexOf("&") + 6);
         GameController.getGameMechanics().getGs().addSession(session, name);
         GameController.getGameMechanics().getGs().increasePlayersInGame(name);
-        //System.out.println(str.substring(str.indexOf("gameId")+7,str.indexOf("&")));
-
         ConnectionPool.getInstance().add(session, name);
-
-        //GameController.getGameMechanics().run();
 
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // System.out.println("Received " + message.toString());
-        String str = message.getPayload().toString();
-        //System.out.println(str);
-        //System.out.println(str.substring(str.indexOf("direction") + 12, str.lastIndexOf("\"")));
         Broker broker = new Broker();
         broker.receive(session, message.getPayload());
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-        GameController.getGameMechanics().getGs().decreasePlayersInGame();
-        if (GameController.getGameMechanics().getGs().getPlayersInGame() == 0) {
-            GameController.getGameMechanics().getGs().kilGameSession();
+        if (GameController.getGameMechanics().getGs().getAllSessions().contains(session)) {
+            String player = ConnectionPool.getInstance().getPlayer(session);
+            GameController.getGameMechanics().removePlayer(player);
+        } else {
+            String player = ConnectionPool.getInstance().getPlayer(session);
+            GameController.getGameMechanics().removePlayer(player);
         }
         System.out.println("Socket Closed: [" + closeStatus.getCode() + "] " + closeStatus.getReason());
         super.afterConnectionClosed(session, closeStatus);

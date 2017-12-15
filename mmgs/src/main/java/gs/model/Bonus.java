@@ -11,7 +11,7 @@ public class Bonus extends Field implements Positionable, Tickable {
     private final int id;
     private Point point;
     private long currentTime = 0;
-    private final long lifeTime = 600;
+    private final long lifeTime = 10000;
 
     public enum Type {
         speed, bomb, fire
@@ -47,8 +47,7 @@ public class Bonus extends Field implements Positionable, Tickable {
 
     public String toJson() {
         Point pos = getPosition();
-        String obj = "{\"type\":\"" + type.name() + "\",\"id\":" +
+        return "{\"type\":\"" + type.name() + "\",\"id\":" +
                 this.getId() + ",\"position\":{\"x\":" + pos.getX() + ",\"y\":" + pos.getY() + "}}";
-        return obj;
     }
 }

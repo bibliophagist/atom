@@ -10,7 +10,8 @@ public class Fire extends Field implements Positionable, Tickable {
     private final int id;
     private Point point;
     private long currentTime = 0;
-    private final long lifeTime = 300;
+    private final long lifeTime = 350;
+    private boolean doubleExplosion = false;
 
     public Fire(int x, int y) {
         super(x, y);
@@ -33,10 +34,21 @@ public class Fire extends Field implements Positionable, Tickable {
         return currentTime >= lifeTime;
     }
 
+    public void resurrect() {
+        currentTime = 0;
+    }
+
+    public void setDoubleExplosion() {
+        this.doubleExplosion = true;
+    }
+
+    public boolean isDoubleExplosion() {
+        return doubleExplosion;
+    }
+
     public String toJson() {
         Point pos = getPosition();
-        String obj = "{\"type\":\"" + this.getClass().getSimpleName() + "\",\"id\":" +
+        return "{\"type\":\"" + this.getClass().getSimpleName() + "\",\"id\":" +
                 this.getId() + ",\"position\":{\"x\":" + pos.getX() + ",\"y\":" + pos.getY() + "}}";
-        return obj;
     }
 }

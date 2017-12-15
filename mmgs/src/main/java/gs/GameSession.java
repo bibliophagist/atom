@@ -15,7 +15,7 @@ import gs.geometry.Point;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GameSession implements Tickable {
+public class GameSession{
     private static final Logger log = LogManager.getLogger(GameSession.class);
 
     private final ConcurrentHashMap<String, Pawn> allPawns = new ConcurrentHashMap<>();
@@ -31,30 +31,30 @@ public class GameSession implements Tickable {
 
     private final long iD = idGenerator.getAndIncrement();
 
-    public void increasePlayersInGame(String name) {
+    void increasePlayersInGame(String name) {
         playersInGame++;
         if (playersInGame == 1) {
-            allPawns.put(name, new Pawn(32, 32, 32));
+            allPawns.put(name, new Pawn(32, 32));
         } else if (playersInGame == 2) {
-            allPawns.put(name, new Pawn(480, 32, 32));
+            allPawns.put(name, new Pawn(480, 32));
         } else if (playersInGame == 3) {
-            allPawns.put(name, new Pawn(32, 352, 32));
+            allPawns.put(name, new Pawn(32, 352));
         } else if (playersInGame == 4) {
-            allPawns.put(name, new Pawn(480, 352, 32));
+            allPawns.put(name, new Pawn(480, 352));
         } else {
             System.out.println("Wrong number of players!");
         }
     }
 
-    public void decreasePlayersInGame() {
+    void decreasePlayersInGame() {
         playersInGame--;
     }
 
-    public int getPlayersInGame() {
+    int getPlayersInGame() {
         return playersInGame;
     }
 
-    public void addSession(WebSocketSession session, String player) {
+    void addSession(WebSocketSession session, String player) {
         allSessions.put(player, session);
     }
 
@@ -64,11 +64,9 @@ public class GameSession implements Tickable {
         } else {
             String objjson = "";
             for (String name : allPawns.keySet()) {
-                Pawn obj = allPawns.get(name);
-                objjson = objjson + obj.toJson() + ",";
+                objjson = objjson + allPawns.get(name).toJson() + ",";
             }
-            String result = objjson.substring(0, (objjson.length() - 1));
-            return result;
+            return objjson.substring(0, (objjson.length() - 1));
         }
     }
 
@@ -78,8 +76,7 @@ public class GameSession implements Tickable {
             Wall obj = allWalls.get(p);
             objjson = objjson + obj.toJson() + ",";
         }
-        String result = objjson.substring(0, (objjson.length() - 1));
-        return result;
+        return objjson.substring(0, (objjson.length() - 1));
     }
 
     public String jsonStringBombs() {
@@ -88,11 +85,9 @@ public class GameSession implements Tickable {
         } else {
             String objjson = "";
             for (Point p : allBombs.keySet()) {
-                Bomb obj = allBombs.get(p);
-                objjson = objjson + obj.toJson() + ",";
+                objjson = objjson + allBombs.get(p).toJson() + ",";
             }
-            String result = objjson.substring(0, (objjson.length() - 1));
-            return result;
+            return objjson.substring(0, (objjson.length() - 1));
         }
     }
 
@@ -102,11 +97,9 @@ public class GameSession implements Tickable {
         } else {
             String objjson = "";
             for (Point p : allBonuses.keySet()) {
-                Bonus obj = allBonuses.get(p);
-                objjson = objjson + obj.toJson() + ",";
+                objjson = objjson + allBonuses.get(p).toJson() + ",";
             }
-            String result = objjson.substring(0, (objjson.length() - 1));
-            return result;
+            return objjson.substring(0, (objjson.length() - 1));
         }
     }
 
@@ -116,11 +109,9 @@ public class GameSession implements Tickable {
         } else {
             String objjson = "";
             for (Point p : allFire.keySet()) {
-                Fire obj = allFire.get(p);
-                objjson = objjson + obj.toJson() + ",";
+                objjson = objjson + allFire.get(p).toJson() + ",";
             }
-            String result = objjson.substring(0, (objjson.length() - 1));
-            return result;
+            return objjson.substring(0, (objjson.length() - 1));
         }
     }
 
@@ -128,7 +119,7 @@ public class GameSession implements Tickable {
         return iD;
     }
 
-    public void kilGameSession() {
+    void kilGameSession() {
         this.gameSessionIsOver = true;
     }
 
@@ -144,27 +135,24 @@ public class GameSession implements Tickable {
         return allSessions;
     }
 
-    public ConcurrentHashMap<String, Pawn> getAllPawns() {
+    ConcurrentHashMap<String, Pawn> getAllPawns() {
         return allPawns;
     }
 
-    public ConcurrentHashMap<Point, Bomb> getAllBombs() {
+    ConcurrentHashMap<Point, Bomb> getAllBombs() {
         return allBombs;
     }
 
-    public ConcurrentHashMap<Point, Fire> getAllFire() {
+    ConcurrentHashMap<Point, Fire> getAllFire() {
         return allFire;
     }
 
-    public ConcurrentHashMap<Point, Wall> getAllWalls() {
+    ConcurrentHashMap<Point, Wall> getAllWalls() {
         return allWalls;
     }
 
-    public ConcurrentHashMap<Point, Bonus> getAllBonuses() {
+    ConcurrentHashMap<Point, Bonus> getAllBonuses() {
         return allBonuses;
     }
 
-    @Override
-    public void tick(long elapsed) {
-    }
 }

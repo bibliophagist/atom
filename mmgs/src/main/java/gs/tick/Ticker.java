@@ -3,6 +3,7 @@ package gs.tick;
 
 import gs.GameMechanics;
 import gs.gamerepository.GameController;
+import gs.matchmakerrequest.MatchMakerRequest;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.concurrent.locks.LockSupport;
 public class Ticker {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Ticker.class);
     private static final int FPS = 60;
-    private static final long FRAME_TIME = 1000 / FPS;
+    private static final long FRAME_TIME = 4000 / FPS;
     private Set<Tickable> tickables = new ConcurrentSkipListSet<>();
     private long tickNumber = 0;
 
@@ -22,7 +23,6 @@ public class Ticker {
             if (GameController.getGameMechanics().getGs().isGameSessionIsOver()) {
                 GameController.setGameMechanics(null);
                 Thread.currentThread().interrupt();
-                //GameController.setGameMechanics(null);
             } else {
                 long started = System.currentTimeMillis();
                 //act(FRAME_TIME);
@@ -32,7 +32,7 @@ public class Ticker {
                     //log.info("All tick finish at {} ms", elapsed);
                     LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(FRAME_TIME - elapsed));
                 } else {
-                    //log.warn("tick lag {} ms", elapsed - FRAME_TIME);
+                    log.warn("tick lag {} ms", elapsed - FRAME_TIME);
                 }
                 //log.info("{}: tick ", tickNumber);
                 tickNumber++;

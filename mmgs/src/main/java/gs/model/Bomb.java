@@ -14,12 +14,14 @@ public class Bomb extends Field implements Positionable, Tickable {
     private Point point;
     private long currentTime = 0;
     private int power = 1;
-    private final long lifeTime = 600;
+    private long lifeTime;
+    private boolean doubleFire=false;
 
     public Bomb(int x, int y, long time) {
         super(x, y);
         this.id = getId();
         this.point = getPosition();
+        this.lifeTime=time;
         log.info("Bombid = " + id + "; " + "Bomb place = (" + point.getX() + "," +
                 point.getY() + ")" + "; " + "Bomb timer = " + time);
     }
@@ -30,6 +32,14 @@ public class Bomb extends Field implements Positionable, Tickable {
 
     public int getPower() {
         return power;
+    }
+
+    public void setDoubleFire(boolean doubleFire) {
+        this.doubleFire=doubleFire;
+    }
+
+    public boolean isDoubleFire() {
+        return doubleFire;
     }
 
     @Override
@@ -47,8 +57,7 @@ public class Bomb extends Field implements Positionable, Tickable {
 
     public String toJson() {
         Point pos = getPosition();
-        String obj = "{\"type\":\"" + this.getClass().getSimpleName() + "\",\"id\":" +
+        return "{\"type\":\"" + this.getClass().getSimpleName() + "\",\"id\":" +
                 this.getId() + ",\"position\":{\"x\":" + pos.getX() + ",\"y\":" + pos.getY() + "}}";
-        return obj;
     }
 }

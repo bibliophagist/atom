@@ -23,7 +23,11 @@ Fire = Entity.extend({
             images: [gGameEngine.fireImg],
             frames: { width: this.size.w, height: this.size.h, regX: 0, regY: 0 },
             animations: {
-                idle: [0, 5, null, 0.4],
+                //idle: [0, 2, "idle", 0.4]
+                idle: {
+                    frames: [0,1,0,1,0,1,0,1,2,3,4,5],
+                    speed: 0.4
+                }
             }
         });
         this.bmp = new createjs.Sprite(spriteSheet);
