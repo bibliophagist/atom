@@ -35,4 +35,33 @@ public class Message {
     public String getData() {
         return data;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Message message = (Message) o;
+
+        if (topic != message.topic) return false;
+        if (data != null ? !data.equals(message.data) : message.data != null) return false;
+        return owner != null ? owner.equals(message.owner) : message.owner == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = topic != null ? topic.hashCode() : 0;
+        result = 31 * result + (data != null ? data.hashCode() : 0);
+        result = 31 * result + (owner != null ? owner.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "topic=" + topic +
+                ", data='" + data + '\'' +
+                ", owner='" + owner + '\'' +
+                '}';
+    }
 }

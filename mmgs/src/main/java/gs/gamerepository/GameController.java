@@ -62,6 +62,6 @@ public class GameController {
         new Thread(gameMechanics, "game-mechanics-" + gameId).start();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
-        return new ResponseEntity<Long>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
