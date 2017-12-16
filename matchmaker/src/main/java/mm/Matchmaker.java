@@ -18,13 +18,13 @@ public class Matchmaker implements Runnable {
     @Autowired
     GameServiceRequest client = new GameServiceRequest();
     private static final int PLAYER_COUNT = 4;
-    private static final int TIMEOUT = 4;
+    private static final int TIMEOUT = 10;
     private long gameId = 100;
     private final PlayerDao playerDao = new PlayerDao();
     private final BlockingQueue<Player> bronzeQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<Player> silverQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<Player> goldQueue = new LinkedBlockingQueue<>();
-    final Hashtable<String, Long> inGamePlayers = new Hashtable<>();
+    final ConcurrentHashMap<String, Long> inGamePlayers = new ConcurrentHashMap<>();
 
     public boolean join(@NotNull String name) {
         int rank = playerDao.getPlayerRank(name);
@@ -61,13 +61,14 @@ public class Matchmaker implements Runnable {
                 Player newPlayer = queue.poll(TIMEOUT, TimeUnit.SECONDS);
                 if (newPlayer == null) {
                     if (players.size() > 1 && players.size() < PLAYER_COUNT) {
-                        addToDB(players);
+//                        addToDB(players);
                         log.info("timeout, game started with " + players.size() + " players in " + queueName + ", pushed to DB");
                         client.start(gameId);
                         //TODO: client.start starts a 10 second timer before starting the game
                         players.clear();
-                    } else
-                        log.info("not enough players to start the game");
+                    } else {
+//                        log.info("not enough players to start the game");
+                    }
                 } else if (!inGamePlayers.containsKey(newPlayer.getLogin())) {
                     players.add(newPlayer);
                     if (players.size() == 1) {
@@ -83,7 +84,7 @@ public class Matchmaker implements Runnable {
             }
 
             if (players.size() == PLAYER_COUNT) {
-                addToDB(players);
+//                addToDB(players);
                 log.info("game started with maximum players in " + queueName + ", pushed to DB");
                 client.start(gameId);
                 players.clear();

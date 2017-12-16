@@ -1,12 +1,10 @@
 dependencies {
     compile rootProject.libraries.spring_boot
     compile rootProject.libraries.spring_boot_websocket
-    compile rootProject.libraries.spring_boot_jpa
 
     compile rootProject.libraries.log4j
     compile rootProject.libraries.jetbrainsAnnotations
     compile rootProject.libraries.postgres
-    /*compile rootProject.libraries.hibernate*/
 
     testCompile rootProject.libraries.junit
     testCompile rootProject.libraries.spring_boot_test

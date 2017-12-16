@@ -1,7 +1,9 @@
 package mm;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mm.dao.PlayerDao;
+import mm.dao.JsonHistory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static mm.dao.returnValue.TRUE;
@@ -152,6 +156,42 @@ public class ConnectionController {
         if (jsonGameHistory != null)
             System.out.println(jsonGameHistory);
         return new ResponseEntity<>(jsonGameHistory, headers, HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            path = "score",
+            method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> score(@RequestParam("json") String jsonScore) {
+        log.info("Score request with data\n" + jsonScore);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonHistory historyEntry = mapper.readValue(jsonScore, JsonHistory.class);
+            playerDao.addToHistory(historyEntry);
+        } catch (IOException e) {
+            log.error("error reading json history string\n" + e);
+            return new ResponseEntity<String>(headers, HttpStatus.OK);
+        }
+        log.info("history added to DB");
+        return new ResponseEntity<String>(headers, HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            path = "kick",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> kick(@RequestParam("login") String login) {
+        log.info("player " + login + " kick request");
+        log.info(matchMaker.inGamePlayers);
+        if (matchMaker.inGamePlayers.containsKey(login)) {
+            log.info(login + " kicked");
+            matchMaker.inGamePlayers.remove(login);
+        }
+        else
+            log.info(login + " if not in the game");
+        return new ResponseEntity<>(headers, HttpStatus.OK);
     }
 
 }

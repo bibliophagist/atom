@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.web.socket.WebSocketSession;
 import gs.geometry.Point;
 
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -27,11 +28,18 @@ public class GameSession {
 
     private static AtomicLong idGenerator = new AtomicLong();
     private int playersInGame = 0;
+
+    public int getMaxPlayersInGame() {
+        return maxPlayersInGame;
+    }
+
+    private int maxPlayersInGame = 0;
     private boolean gameSessionIsOver = false;
 
-    private final long iD = idGenerator.getAndIncrement();
+    private final long iD = UUID.randomUUID().getLeastSignificantBits();
 
     void increasePlayersInGame(String name) {
+        maxPlayersInGame++;
         playersInGame++;
         if (playersInGame == 1) {
             allPawns.put(name, new Pawn(32, 32));
@@ -42,7 +50,7 @@ public class GameSession {
         } else if (playersInGame == 4) {
             allPawns.put(name, new Pawn(480, 352));
         } else {
-            System.out.println("Wrong number of players!");
+            log.error("Wrong number of players!");
         }
     }
 

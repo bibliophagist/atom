@@ -1,5 +1,6 @@
 package mm.dao;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.intellij.lang.annotations.Language;
@@ -53,7 +54,7 @@ public class PlayerDao implements Dao<Player> {
     @Language("sql")
     private static final String RESET_TABLE = "DROP TABLE IF EXISTS game.player;\n" +
             "CREATE TABLE game.player (\n" +
-            "  gameId   SERIAL          ,\n" +
+            "  gameId   BIGINT          ,\n" +
             "  login    VARCHAR(20)     UNIQUE NOT NULL,\n" +
             "  PRIMARY KEY (login)\n" +
             ");";
@@ -76,6 +77,19 @@ public class PlayerDao implements Dao<Player> {
     private static final String REGISTER =
             "INSERT INTO serverdata.list (login,password) " +
                     "VALUES ('%s', '%s');";
+
+    @Language("sql")
+    private static final String GET_PLAYER_HISTORY =
+            "select players,result from serverdata.gamehistory where '%s' = any (players);";
+
+    @Language("sql")
+    private static final String GET_ALL_GAME_ID =
+            "SELECT gameid from serverdata.gamehistory";
+
+    @Language("sql")
+    private static final String ADD_TO_HISTORY =
+            "INSERT INTO serverdata.gamehistory VALUES\n" +
+                    "('%d', '%s', '%s');";
 
     @Override
     public List<Player> getAll() {
@@ -218,7 +232,7 @@ public class PlayerDao implements Dao<Player> {
         try (Connection con = DbConnector.getConnection();
              Statement stm = con.createStatement()) {
 
-            ResultSet rs = stm.executeQuery(String.format("select players,result from serverdata.gamehistory where '%s' = any (players);", login));
+            ResultSet rs = stm.executeQuery(String.format(GET_PLAYER_HISTORY, login));
             ArrayList<Map<String, Integer>> resultArray = new ArrayList<>();
             while (rs.next()) {
                 String players = rs.getString(1);
@@ -247,7 +261,7 @@ public class PlayerDao implements Dao<Player> {
     public List<Integer> getAllGameId(String player) {
         try (Connection con = DbConnector.getConnection();
              Statement stm = con.createStatement()) {
-            ResultSet rs = stm.executeQuery("SELECT gameid from serverdata.gamehistory");
+            ResultSet rs = stm.executeQuery(GET_ALL_GAME_ID);
             List<Integer> returnList = new LinkedList<>();
             while (rs.next()) {
                 returnList.add(rs.getInt(1));
@@ -259,8 +273,27 @@ public class PlayerDao implements Dao<Player> {
         }
     }
 
-    public Player getByName(String name) {
-        throw new UnsupportedOperationException();
+    public void addToHistory(JsonHistory historyEntry) {
+        StringBuilder playersString = new StringBuilder();
+        playersString.append("{");
+        StringBuilder scoreString = new StringBuilder();
+        scoreString.append("{");
+        for (JsonHistory.JsonPlayer player :
+                historyEntry.players) {
+            playersString.append(player.name).append(",");
+            scoreString.append(player.score).append(",");
+        }
+        playersString.deleteCharAt(playersString.length()-1);
+        playersString.append("}");
+        scoreString.deleteCharAt(scoreString.length()-1);
+        scoreString.append("}");
+        try (Connection con = DbConnector.getConnection();
+             Statement stm = con.createStatement()) {
+            stm.execute(String.format(ADD_TO_HISTORY, historyEntry.gameid, playersString, scoreString));
+        } catch (SQLException e) {
+            log.error("Failed to add game to history \ndue to exception: " + e);
+        }
+        log.info(playersString);
     }
 
     private static Player mapToPlayer(ResultSet rs) throws SQLException {

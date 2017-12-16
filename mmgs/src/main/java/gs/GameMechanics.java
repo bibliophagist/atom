@@ -45,7 +45,7 @@ public class GameMechanics implements Tickable, Runnable {
 
     @Override
     public void run() {
-        score = score + "\"" + gs.getiD() + "\"";
+        score = score + "\"" + gs.getiD() + "\",\"players\":[";
         initCanvas();
         ticker.gameLoop();
     }
@@ -414,29 +414,33 @@ public class GameMechanics implements Tickable, Runnable {
     }
 
     void removePlayer(String player) {
+        if (gs.getPlayersInGame() != gs.getMaxPlayersInGame()) {
+            score = score + ",";
+        }
         switch (gs.getPlayersInGame()) {
             case 1:
-                score = score + "," + "\"" + player + "\"" + ":" + "\"" + 1 + "\"" + "}";
+                score = score + "{\"login\":\"" + player + "\"," + "\"score\":" + "\"" + 1 + "\"}]}";
                 break;
             case 2:
-                score = score + "," + "\"" + player + "\"" + ":" + "\"" + 0 + "\"";
+                score = score + "{\"login\":\"" + player + "\"," + "\"score\":" + "\"" + 0 + "\"}";
                 break;
             case 3:
-                score = score + "," + "\"" + player + "\"" + ":" + "\"" + 0 + "\"";
+                score = score + "{\"login\":\"" + player + "\"," + "\"score\":" + "\"" + 0 + "\"}";
                 break;
             case 4:
-                score = score + "," + "\"" + player + "\"" + ":" + "\"" + -1 + "\"";
+                score = score + "{\"login\":\"" + player + "\"," + "\"score\":" + "\"" + -1 + "\"}";
                 break;
             default:
                 break;
         }
         gs.decreasePlayersInGame();
         gs.getAllSessions().remove(player);
+        MatchMakerRequest matchMakerRequest = new MatchMakerRequest();
+        matchMakerRequest.gameOver(player);
         System.out.println(gs.getPlayersInGame());
         if (gs.getPlayersInGame() == 0) {
-            MatchMakerRequest matchMakerRequest = new MatchMakerRequest();
+            matchMakerRequest.sendScore(score);
             //TODO раскоментить при реализации запроса в MM
-            //matchMakerRequest.sendScore(score);
             gs.kilGameSession();
         }
     }
