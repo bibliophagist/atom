@@ -15,13 +15,13 @@ public class Bomb extends Field implements Positionable, Tickable {
     private long currentTime = 0;
     private int power = 1;
     private long lifeTime;
-    private boolean doubleFire=false;
+    private boolean doubleFire = false;
 
     public Bomb(int x, int y, long time) {
         super(x, y);
         this.id = getId();
         this.point = getPosition();
-        this.lifeTime=time;
+        this.lifeTime = time;
         log.info("Bombid = " + id + "; " + "Bomb place = (" + point.getX() + "," +
                 point.getY() + ")" + "; " + "Bomb timer = " + time);
     }
@@ -35,7 +35,7 @@ public class Bomb extends Field implements Positionable, Tickable {
     }
 
     public void setDoubleFire(boolean doubleFire) {
-        this.doubleFire=doubleFire;
+        this.doubleFire = doubleFire;
     }
 
     public boolean isDoubleFire() {

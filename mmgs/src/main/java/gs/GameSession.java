@@ -15,7 +15,7 @@ import gs.geometry.Point;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GameSession{
+public class GameSession {
     private static final Logger log = LogManager.getLogger(GameSession.class);
 
     private final ConcurrentHashMap<String, Pawn> allPawns = new ConcurrentHashMap<>();
