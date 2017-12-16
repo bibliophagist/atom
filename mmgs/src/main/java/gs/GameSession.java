@@ -135,7 +135,7 @@ public class GameSession{
         return allSessions;
     }
 
-    ConcurrentHashMap<String, Pawn> getAllPawns() {
+    public ConcurrentHashMap<String, Pawn> getAllPawns() {
         return allPawns;
     }
 

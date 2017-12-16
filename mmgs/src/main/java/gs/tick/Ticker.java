@@ -14,7 +14,7 @@ import java.util.concurrent.locks.LockSupport;
 public class Ticker {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Ticker.class);
     private static final int FPS = 60;
-    private static final long FRAME_TIME = 4000 / FPS;
+    private static final long FRAME_TIME = 6000 / FPS;
     private Set<Tickable> tickables = new ConcurrentSkipListSet<>();
     private long tickNumber = 0;
 

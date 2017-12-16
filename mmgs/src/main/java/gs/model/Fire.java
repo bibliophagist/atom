@@ -10,7 +10,7 @@ public class Fire extends Field implements Positionable, Tickable {
     private final int id;
     private Point point;
     private long currentTime = 0;
-    private final long lifeTime = 350;
+    private final long lifeTime = 600;
     private boolean doubleExplosion = false;
 
     public Fire(int x, int y) {
@@ -38,8 +38,8 @@ public class Fire extends Field implements Positionable, Tickable {
         currentTime = 0;
     }
 
-    public void setDoubleExplosion() {
-        this.doubleExplosion = true;
+    public void setDoubleExplosion(boolean doubleExplosion) {
+        this.doubleExplosion = doubleExplosion;
     }
 
     public boolean isDoubleExplosion() {

@@ -27,7 +27,6 @@ public class GameMechanics implements Tickable, Runnable {
     private Ticker ticker = new Ticker();
     private final ConcurrentHashMap<String, Boolean> bombHasBeenPlanted = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> moveHasBeenMade = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, Fire> fireWillBeResurrected = new ConcurrentHashMap<>();
     private int currentNumberOfBonuses = 0;
     private String score = "{\"gameId\":";
     private GameSession gs;
@@ -81,6 +80,7 @@ public class GameMechanics implements Tickable, Runnable {
                     }
                 }
                 Point right = pawn.move(Movable.Direction.RIGHT, 1);
+                bonusCheck(pawn);
                 if (gs.getAllWalls().get(pixelToTile(right)).getType() != Wall.Type.Grass) {
                     pawn.move(Movable.Direction.LEFT, 1);
                 } else {
@@ -99,6 +99,7 @@ public class GameMechanics implements Tickable, Runnable {
                     }
                 }
                 Point left = pawn.move(Movable.Direction.LEFT, 1);
+                bonusCheck(pawn);
                 if (gs.getAllWalls().get(pixelToTile(left)).getType() != Wall.Type.Grass) {
                     pawn.move(Movable.Direction.RIGHT, 1);
                 } else {
@@ -117,6 +118,7 @@ public class GameMechanics implements Tickable, Runnable {
                     }
                 }
                 Point up = pawn.move(Movable.Direction.UP, 1);
+                bonusCheck(pawn);
                 if (gs.getAllWalls().get(pixelToTile(up)).getType() != Wall.Type.Grass) {
                     pawn.move(Movable.Direction.DOWN, 1);
                 } else {
@@ -135,6 +137,7 @@ public class GameMechanics implements Tickable, Runnable {
                     }
                 }
                 Point down = pawn.move(Movable.Direction.DOWN, 1);
+                bonusCheck(pawn);
                 if (gs.getAllWalls().get(pixelToTile(down)).getType() != Wall.Type.Grass) {
                     pawn.move(Movable.Direction.UP, 1);
                 } else {
@@ -174,6 +177,9 @@ public class GameMechanics implements Tickable, Runnable {
             }
         }
         for (String name : gs.getAllPawns().keySet()) {
+            if (gs.getAllPawns().get(name).isBonusOver()) {
+                gs.getAllPawns().get(name).restoreDefault();
+            }
             if (gs.getAllFire().containsKey(pixelToTile(gs.getAllPawns().get(name).getPoint()))) {
                 gs.getAllPawns().remove(name);
                 try {
@@ -188,9 +194,11 @@ public class GameMechanics implements Tickable, Runnable {
             fire.tick(elapsed);
             if (fire.isDead()) {
                 if (fire.isDoubleExplosion()) {
-                    fireWillBeResurrected.put(ticker.getTickNumber(), gs.getAllFire().get(p));
+                    fire.resurrect();
+                    fire.setDoubleExplosion(false);
+                } else {
+                    gs.getAllFire().remove(p);
                 }
-                gs.getAllFire().remove(p);
             }
         }
         for (Point p : gs.getAllBonuses().keySet()) {
@@ -198,43 +206,46 @@ public class GameMechanics implements Tickable, Runnable {
             bonus.tick(elapsed);
             if (bonus.isDead()) {
                 gs.getAllBonuses().remove(p);
+                currentNumberOfBonuses--;
             }
         }
         for (String name : gs.getAllPawns().keySet()) {
-            Pawn pawn = gs.getAllPawns().get(name);
-            if (gs.getAllBonuses().containsKey(pixelToTile(gs.getAllPawns().get(name).getPoint()))) {
-                if (gs.getAllPawns().get(name).isBonusOver() || gs.getAllPawns().get(name).isFirstBonus()) {
-                    if (gs.getAllPawns().get(name).isFirstBonus()) {
-                        gs.getAllPawns().get(name).setFirstBonus(false);
-                    }
-                    gs.getAllPawns().get(name).setCurrentTime();
-                    gs.getAllPawns().get(name).restoreDefault();
-                    useBonus(name);
-                }
-                currentNumberOfBonuses--;
-                gs.getAllBonuses().remove(pixelToTile(gs.getAllPawns().get(name).getPoint()));
-            }
-            pawn.tick(elapsed);
+            bonusCheck(gs.getAllPawns().get(name));
+            gs.getAllPawns().get(name).tick(elapsed);
         }
-        if ((currentNumberOfBonuses <= 2) && (ticker.getTickNumber() % 100 == 0)) {
+        if ((currentNumberOfBonuses <= 2) && (ticker.getTickNumber() % 10 == 0)) {
             bonusCreator();
         }
         writeReplica(gs);
     }
 
-    private void useBonus(String name) {
-        switch (gs.getAllBonuses().get(pixelToTile(gs.getAllPawns().get(name).getPoint())).getType()) {
+    private void useBonus(Pawn pawn) {
+        switch (gs.getAllBonuses().get(pixelToTile(pawn.getPoint())).getType()) {
             case bomb:
-                gs.getAllPawns().get(name).setPower();
+                pawn.setPower();
                 break;
             case fire:
-                gs.getAllPawns().get(name).setPyromancer();
+                pawn.setPyromancer();
                 break;
             case speed:
-                gs.getAllPawns().get(name).setSpeedMultiply(2);
+                pawn.setSpeedMultiply(2);
                 break;
             default:
                 break;
+        }
+    }
+
+    private void bonusCheck(Pawn pawn) {
+        if (gs.getAllBonuses().containsKey(pixelToTile(pawn.getPoint()))) {
+            if (pawn.isBonusOver() || pawn.isFirstBonus()) {
+                if (pawn.isFirstBonus()) {
+                    pawn.setFirstBonus(false);
+                }
+                pawn.setCurrentTime();
+                useBonus(pawn);
+            }
+            currentNumberOfBonuses--;
+            gs.getAllBonuses().remove(pixelToTile(pawn.getPoint()));
         }
     }
 
@@ -248,7 +259,7 @@ public class GameMechanics implements Tickable, Runnable {
             gs.getAllFire().put(rightWall.getPosition(), new Fire(tileToPixel(rightWall.getPosition()).getX(),
                     tileToPixel(rightWall.getPosition()).getY()));
             if (bomb.isDoubleFire()) {
-                gs.getAllFire().get(rightWall.getPosition()).setDoubleExplosion();
+                gs.getAllFire().get(rightWall.getPosition()).setDoubleExplosion(true);
             }
             if (bomb.getPower() == 2) {
                 Wall secondRightWall = gs.getAllWalls().get(new Point(rightWall.getPosition().getX() + 1,
@@ -266,7 +277,7 @@ public class GameMechanics implements Tickable, Runnable {
             gs.getAllFire().put(leftWall.getPosition(), new Fire(tileToPixel(leftWall.getPosition()).getX(),
                     tileToPixel(leftWall.getPosition()).getY()));
             if (bomb.isDoubleFire()) {
-                gs.getAllFire().get(leftWall.getPosition()).setDoubleExplosion();
+                gs.getAllFire().get(leftWall.getPosition()).setDoubleExplosion(true);
             }
             if (bomb.getPower() == 2) {
                 Wall secondLeftWall = gs.getAllWalls().get(new Point(leftWall.getPosition().getX() - 1,
@@ -284,7 +295,7 @@ public class GameMechanics implements Tickable, Runnable {
             gs.getAllFire().put(topWall.getPosition(), new Fire(tileToPixel(topWall.getPosition()).getX(),
                     tileToPixel(topWall.getPosition()).getY()));
             if (bomb.isDoubleFire()) {
-                gs.getAllFire().get(topWall.getPosition()).setDoubleExplosion();
+                gs.getAllFire().get(topWall.getPosition()).setDoubleExplosion(true);
             }
             if (bomb.getPower() == 2) {
                 Wall secondTopWall = gs.getAllWalls().get(new Point(topWall.getPosition().getX(),
@@ -302,7 +313,7 @@ public class GameMechanics implements Tickable, Runnable {
             gs.getAllFire().put(bottomWall.getPosition(), new Fire(tileToPixel(bottomWall.getPosition()).getX(),
                     tileToPixel(bottomWall.getPosition()).getY()));
             if (bomb.isDoubleFire()) {
-                gs.getAllFire().get(bottomWall.getPosition()).setDoubleExplosion();
+                gs.getAllFire().get(bottomWall.getPosition()).setDoubleExplosion(true);
             }
             if (bomb.getPower() == 2) {
                 Wall secondBottomWall = gs.getAllWalls().get(new Point(bottomWall.getPosition().getX(),
@@ -317,6 +328,9 @@ public class GameMechanics implements Tickable, Runnable {
         }
         gs.getAllFire().put(pixelToTile(bomb.getPosition()), new Fire(bomb.getPosition().getX(),
                 bomb.getPosition().getY()));
+        if (bomb.isDoubleFire()) {
+            gs.getAllFire().get(pixelToTile(bomb.getPosition())).setDoubleExplosion(true);
+        }
         gs.getAllBombs().remove(p);
     }
 

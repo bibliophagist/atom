@@ -11,9 +11,8 @@ public class Replicator {
     public void writeReplica(GameSession gs) {
         for (String name : gs.getAllSessions().keySet()) {
             WebSocketSession session = gs.getAllSessions().get(name);
-            String id = session.getId();
             Broker.getInstance().send(gs, ConnectionPool.getInstance().getPlayer(session), Topic.POSSESS,
-                    session.getId());
+                    String.valueOf(gs.getAllPawns().get(name).getId()));
             if (gs.jsonStringBombs() == null) {
                 if (gs.jsonStringExplosions() == null) {
                     if (gs.jsonStringBonuses() == null) {
