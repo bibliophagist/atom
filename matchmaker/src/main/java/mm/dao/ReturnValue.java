@@ -1,6 +1,6 @@
 package mm.dao;
 
-public enum returnValue {
+public enum ReturnValue {
     TRUE,
     FALSE,
     ERROR

@@ -1,6 +1,5 @@
 package mm;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mm.dao.PlayerDao;
 import mm.dao.JsonHistory;
@@ -12,14 +11,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RequestMethod;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import static mm.dao.returnValue.TRUE;
+import static mm.dao.ReturnValue.TRUE;
 
 @Controller
 @CrossOrigin
@@ -42,7 +43,8 @@ public class ConnectionController {
     /**
      * curl test
      * <p>
-     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/join -d "name=bomberman"
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/join
+     * -d "name=bomberman"
      */
 
     @RequestMapping(
@@ -51,16 +53,16 @@ public class ConnectionController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> join(@RequestParam("name") String name) {
-        if (!(playerDao.playerExists(name)==TRUE)) {
+        if (!(playerDao.playerExists(name) == TRUE)) {
             //TODO: change HttpStatus
-            return new ResponseEntity<>("no player with such name, use register instead", headers, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("-", headers, HttpStatus.OK);
         }
         log.info(name + " joins");
         if (matchMaker.join(name)) {
             log.info(name + " added to queue");
         } else {
             log.error(name + " cannot be added to queue");
-            return new ResponseEntity<>("cannot add to queue due to internal server problem, try again later", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Long gameId = null;
         while (gameId == null) {
@@ -78,7 +80,8 @@ public class ConnectionController {
     /**
      * curl test
      * <p>
-     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/login -d "login=test&password=qwer"
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/login
+     * -d "login=test&password=qwer"
      *</p>
      */
 
@@ -86,7 +89,7 @@ public class ConnectionController {
             path = "login",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
-    )
+        )
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> login(@RequestParam("login") String login,
                                         @RequestParam("password") String password) {
@@ -100,8 +103,11 @@ public class ConnectionController {
                 return new ResponseEntity<>("-", headers, HttpStatus.OK);
 
             case ERROR:
-                log.error("Failed to login player" + login );
+                log.error("Failed to login player" + login);
                 return new ResponseEntity<>("", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+
+            default:
+                break;
         }
         return null;
     }
@@ -109,7 +115,8 @@ public class ConnectionController {
     /**
      * curl test
      * <p>
-     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/register -d "login=test&password=qwer"
+     * curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" localhost:8080/matchmaker/register
+     * -d "login=test&password=qwer"
      *</p>
      */
 
@@ -117,7 +124,7 @@ public class ConnectionController {
             path = "register",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
-    )
+        )
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> register(@RequestParam("login") String login,
                                            @RequestParam("password") String password) {
@@ -127,9 +134,8 @@ public class ConnectionController {
         } else if (playerDao.register(login, password) == TRUE) {
             log.info("Player " + login + " registered with password " + password);
             return new ResponseEntity<>("+", headers, HttpStatus.OK);
-        }
-        else {
-            log.error("Failed to register player" + login );
+        } else {
+            log.error("Failed to register player" + login);
             return new ResponseEntity<>("", headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -152,7 +158,9 @@ public class ConnectionController {
         String jsonGameHistory = null;
         try {
             jsonGameHistory = mapper.writeValueAsString(gameHistory);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+
+        }
         if (jsonGameHistory != null)
             System.out.println(jsonGameHistory);
         return new ResponseEntity<>(jsonGameHistory, headers, HttpStatus.OK);
@@ -188,8 +196,7 @@ public class ConnectionController {
         if (matchMaker.inGamePlayers.containsKey(login)) {
             log.info(login + " kicked");
             matchMaker.inGamePlayers.remove(login);
-        }
-        else
+        } else
             log.info(login + " if not in the game");
         return new ResponseEntity<>(headers, HttpStatus.OK);
     }

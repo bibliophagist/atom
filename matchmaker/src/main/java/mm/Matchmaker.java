@@ -8,8 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 
 @Service
 public class Matchmaker implements Runnable {
@@ -61,13 +66,16 @@ public class Matchmaker implements Runnable {
                 Player newPlayer = queue.poll(TIMEOUT, TimeUnit.SECONDS);
                 if (newPlayer == null) {
                     if (players.size() > 1 && players.size() < PLAYER_COUNT) {
-//                        addToDB(players);
-                        log.info("timeout, game started with " + players.size() + " players in " + queueName + ", pushed to DB");
+                        log.info("timeout, game started with "
+                                + players.size()
+                                + " players in "
+                                + queueName
+                                + ", pushed to DB");
                         client.start(gameId);
                         //TODO: client.start starts a 10 second timer before starting the game
                         players.clear();
                     } else {
-//                        log.info("not enough players to start the game");
+                        //log.info("not enough players to start the game");
                     }
                 } else if (!inGamePlayers.containsKey(newPlayer.getLogin())) {
                     players.add(newPlayer);
@@ -84,19 +92,10 @@ public class Matchmaker implements Runnable {
             }
 
             if (players.size() == PLAYER_COUNT) {
-//                addToDB(players);
                 log.info("game started with maximum players in " + queueName + ", pushed to DB");
                 client.start(gameId);
                 players.clear();
             }
-        }
-    }
-
-    private void addToDB(Collection<Player> players) {
-        for (Player player :
-                players) {
-            player.setGameId(gameId);
-            playerDao.insert(player);
         }
     }
 }
