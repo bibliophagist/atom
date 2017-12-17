@@ -335,7 +335,6 @@ public class GameMechanics implements Tickable, Runnable {
     }
 
     private void initCanvas() {
-        gs.getAllFire().put(new Point(32, 320), new Fire(32, 320));
         for (int i = 0; i < 13; ++i) {
             for (int k = 0; k < 17; ++k) {
                 if (i == 0 || i == 12) {
