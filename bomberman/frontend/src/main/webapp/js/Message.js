@@ -6,6 +6,7 @@ Messages = Class.extend({
         this.handler['Bomb'] = this.handleBomb;
         this.handler['Wood'] = this.handleTile;
         this.handler['Wall'] = this.handleTile;
+        this.handler['Grass'] = this.handleTile;
         this.handler['Fire'] = this.handleFire;
         this.handler['speed'] = this.handleBonus;
         this.handler['bomb'] = this.handleBonus;
@@ -104,7 +105,9 @@ Messages = Class.extend({
 
         var position = Utils.getEntityPosition(Utils.convertToBitmapPosition(obj.position));
         if (tile) {
-            tile.material = obj.type;
+            if (tile.material !== obj.type) {
+                tile.update(obj.type);
+            }
         } else {
             tile = new Tile(obj.id, obj.type, position);
             gGameEngine.tiles.push(tile);
