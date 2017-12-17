@@ -33,7 +33,7 @@ Messages = Class.extend({
 
 
     handleReplica: function (msg) {
-        //var gameObjects = JSON.parse(msg.data).objects;
+        //var gameObjects = JSON.parse(msg.data).objects
         var gameObjects = msg.data.objects;
         var survivors = new Set();
 

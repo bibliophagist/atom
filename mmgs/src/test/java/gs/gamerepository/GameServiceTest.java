@@ -18,6 +18,6 @@ public class GameServiceTest {
     @Test
     public void create() throws Exception {
         long id = new GameRepository().newSession(4);
-        assertEquals(id + 1, gameService.create(4));
+        assertEquals(true, GameRepository.getMap().containsKey(id));
     }
 }
