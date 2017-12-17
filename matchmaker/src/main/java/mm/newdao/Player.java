@@ -21,7 +21,7 @@ public class Player {
     @Column(name = "login", unique = true, nullable = false, length = 20)
     private String login;
 
-    @Column(name = "password", unique = true, nullable = false, length = 20)
+    @Column(name = "password", nullable = false, length = 20)
     private String password;
 
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
