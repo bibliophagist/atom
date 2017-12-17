@@ -17,7 +17,7 @@ public class BillingServer {
         jerseyServlet.setInitOrder(0);
 
         jerseyServlet.setInitParameter(
-                "boot.config.server.provider.packages",
+                "jersey.config.server.provider.packages",
                 "ru.atom.lecture11.billing"
         );
 

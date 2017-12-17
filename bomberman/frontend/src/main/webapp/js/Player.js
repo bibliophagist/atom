@@ -32,15 +32,17 @@ Player = Entity.extend({
     deadTimer: 0,
 
 
-
-    init: function(id, position) {
+    init: function (id, position) {
         this.id = id;
+        gGameEngine.numberOfPawns++;
 
-        var img = gGameEngine.playerGirlImg;
+        var imgGirl1 = gGameEngine.playerGirlImg;
+        var imgGirl2 = gGameEngine.playerGirl2Img;
+        var imgBoy1 = gGameEngine.playerBoyImg;
 
-        var spriteSheet = new createjs.SpriteSheet({
-            images: [img],
-            frames: { width: this.size.w, height: this.size.h, regX: 10, regY: 12 },
+        var spriteSheetGirl1 = new createjs.SpriteSheet({
+            images: [imgGirl1],
+            frames: {width: this.size.w, height: this.size.h, regX: 10, regY: 12},
             animations: {
                 idle: [0, 0, 'idle'],
                 down: [0, 3, 'down', 0.1],
@@ -50,7 +52,46 @@ Player = Entity.extend({
                 dead: [16, 16, 'dead', 0.1]
             }
         });
-        this.bmp = new createjs.Sprite(spriteSheet);
+
+        var spriteSheetGirl2 = new createjs.SpriteSheet({
+            images: [imgGirl2],
+            frames: {width: this.size.w, height: this.size.h, regX: 10, regY: 12},
+            animations: {
+                idle: [0, 0, 'idle'],
+                down: [0, 3, 'down', 0.1],
+                left: [4, 7, 'left', 0.1],
+                up: [8, 11, 'up', 0.1],
+                right: [12, 15, 'right', 0.1],
+                dead: [16, 16, 'dead', 0.1]
+            }
+        });
+
+        var spriteSheetBoy1 = new createjs.SpriteSheet({
+            images: [imgBoy1],
+            frames: {width: this.size.w, height: this.size.h, regX: 10, regY: 12},
+            animations: {
+                idle: [0, 0, 'idle'],
+                down: [0, 3, 'down', 0.1],
+                left: [4, 7, 'left', 0.1],
+                up: [8, 11, 'up', 0.1],
+                right: [12, 15, 'right', 0.1],
+                dead: [16, 16, 'dead', 0.1]
+            }
+        });
+
+        switch (gGameEngine.numberOfPawns % 3){
+            case 0:
+                this.bmp = new createjs.Sprite(spriteSheetGirl1);
+                break;
+            case 1:
+                this.bmp = new createjs.Sprite(spriteSheetGirl2);
+                break;
+            case 2:
+                this.bmp = new createjs.Sprite(spriteSheetBoy1);
+                break;
+            default:
+                break;
+        }
 
         this.bmp.x = position.x;
         this.bmp.y = position.y;
@@ -61,7 +102,7 @@ Player = Entity.extend({
     },
 
 
-    update: function() {
+    update: function () {
         if (!this.alive) {
             return;
         }
@@ -81,28 +122,29 @@ Player = Entity.extend({
         } else {
             this.animate('idle');
         }
+
     },
 
     /**
      * Changes animation if requested animation is not already current.
      */
-    animate: function(animation) {
+    animate: function (animation) {
         if (!this.bmp.currentAnimation || this.bmp.currentAnimation.indexOf(animation) === -1) {
             this.bmp.gotoAndPlay(animation);
         }
     },
 
-    die: function() {
+    die: function () {
         this.alive = false;
 
         this.bmp.gotoAndPlay('dead');
         this.fade();
     },
 
-    fade: function() {
+    fade: function () {
         var timer = 0;
         var bmp = this.bmp;
-        var fade = setInterval(function() {
+        var fade = setInterval(function () {
             timer++;
 
             if (timer > 30) {
@@ -113,5 +155,11 @@ Player = Entity.extend({
             }
 
         }, 30);
+    },
+
+    remove: function () {
+        this.bmp.gotoAndPlay('dead');
+        this.fade();
+        //gGameEngine.stage.removeChild(this.bmp);
     }
 });

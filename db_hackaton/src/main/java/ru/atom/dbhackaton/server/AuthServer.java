@@ -31,12 +31,12 @@ public class AuthServer {
         jerseyServlet.setInitOrder(0);
 
         jerseyServlet.setInitParameter(
-                "boot.config.server.provider.packages",
+                "jersey.config.server.provider.packages",
                 "ru.atom.dbhackaton.server"
         );
 
         jerseyServlet.setInitParameter(
-                "com.sun.boot.spi.container.ContainerResponseFilters",
+                "com.sun.jersey.spi.container.ContainerResponseFilters",
                 CrossBrowserFilter.class.getCanonicalName()
         );
 

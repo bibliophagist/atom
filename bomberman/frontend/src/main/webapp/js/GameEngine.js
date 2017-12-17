@@ -6,8 +6,10 @@ GameEngine = Class.extend({
     fps: 60,
     playersCount: 2,
     bonusesPercent: 16,
+    numberOfPawns: 0,
 
     stage: null,
+    menu: null,
     players: [],
     tiles: [],
     bombs: [],
@@ -74,7 +76,7 @@ GameEngine = Class.extend({
         createjs.Sound.registerSound("sound/bomb.ogg", "bomb");
         // createjs.Sound.registerSound("sound/game.ogg", "game");
 
-
+        this.menu = new Menu();
     },
 
     setup: function() {
@@ -101,6 +103,10 @@ GameEngine = Class.extend({
             if (this.soundtrackLoaded) {
                 this.playSoundtrack();
             }
+        }
+
+        if (!this.playing) {
+            this.menu.show();
         }
     },
 
@@ -135,7 +141,7 @@ GameEngine = Class.extend({
         }
 
         // Menu
-        // gGameEngine.menu.update();
+        gGameEngine.menu.update();
 
         // Stage
         gGameEngine.stage.update();
@@ -182,7 +188,7 @@ GameEngine = Class.extend({
     },
 
     gc: function(survivors) {
-        [this.players, this.tiles, this.bombs, this.bonuses].forEach(function (it) {
+        [this.players, this.tiles, this.bombs, this.bonuses, this.fires].forEach(function (it) {
             var i = it.length;
             while (i--) {
                 if (!survivors.has(it[i].id)) {

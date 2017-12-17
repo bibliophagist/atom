@@ -1,5 +1,7 @@
 package ru.atom.thread.practice;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.util.List;
 
 /**
@@ -8,14 +10,14 @@ import java.util.List;
  */
 public class EventProcessor {
     public static void produceEvents(List<EventProducer> eventProducers) {
-        throw new UnsupportedOperationException();
+        throw new NotImplementedException();
     }
 
     public static long countTotalNumberOfGoodEvents() {
-        throw new UnsupportedOperationException();
+        throw new NotImplementedException();
     }
 
     public static long countTotalNumberOfBadEvents() {
-        throw new UnsupportedOperationException();
+        throw new NotImplementedException();
     }
 }
